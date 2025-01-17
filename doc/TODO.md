@@ -58,7 +58,7 @@
 
 ### Tests
 
-- WRITE_ACTUAL does not preserve comment order for readlines
+- update tests does not preserve comment order for readlines
 - empty file test
 - CLI tests, raw write, colors?
 - Interactive tests
@@ -118,12 +118,6 @@
 - `0b` -> `1.7976931348623157e+308` something fishy with bin/hex/... literals change
 - Do something similar to `builtin.go` in gojq to speedup a bit
 - remove `scopedump`?
-
-#### Readline
-
-- Use something else than `github.com/chzyer/readline`?
-- Fixes for readline
-  - Undo (ctrl+-) normal readline bahave differently for backspace (history for each character)
 
 #### Big things
 

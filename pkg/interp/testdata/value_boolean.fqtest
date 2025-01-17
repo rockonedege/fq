@@ -19,7 +19,9 @@ error: expected an array but got: boolean
 mp3> .headers[0].header.flags.unsynchronisation[-1000:2000] | ., type, length?
 error: expected an array but got: boolean
 mp3> .headers[0].header.flags.unsynchronisation["test"] | ., type, length?
-error: expected an object but got: boolean
+null
+"null"
+0
 mp3> [.headers[0].header.flags.unsynchronisation[]] | type, length?
 error: cannot iterate over: boolean
 mp3> .headers[0].header.flags.unsynchronisation | keys
@@ -79,12 +81,12 @@ mp3> .headers[0].header.flags.unsynchronisation._path | ., type, length?
 5
 mp3> .headers[0].header.flags.unsynchronisation._bits | ., type, length?
    |00 01 02 03 04 05 06 07 08 09 0a 0b 0c 0d 0e 0f|0123456789abcdef|
-0x0|               00                              |     .          |.: raw bits 0x5-0x5 (0.1)
+0x0|               00                              |     .          |.: raw bits 0x5-0x5.1 (0.1)
 "string"
 1
 mp3> .headers[0].header.flags.unsynchronisation._bytes | ., type, length?
    |00 01 02 03 04 05 06 07 08 09 0a 0b 0c 0d 0e 0f|0123456789abcdef|
-0x0|               00                              |     .          |.: raw bits 0x5-0x5 (0.1)
+0x0|               00                              |     .          |.: raw bits 0x5-0x5.1 (0.1)
 "string"
 0
 mp3> .headers[0].header.flags.unsynchronisation._error | ., type, length?
@@ -95,19 +97,19 @@ mp3> .headers[0].header.flags.unsynchronisation._gap | ., type, length?
 false
 "boolean"
 mp3> .headers[0].header.flags.unsynchronisation.a = 1
-error: expected an object but got: boolean (false)
+error: setpath(["headers",0,"header","fl ...]; 1) cannot be applied to {"footers":[],"frames":[{" ...: expected an object but got: boolean (false)
 mp3> .headers[0].header.flags.unsynchronisation[0] = 1
-error: expected an array but got: boolean (false)
+error: setpath(["headers",0,"header","fl ...]; 1) cannot be applied to {"footers":[],"frames":[{" ...: expected an array but got: boolean (false)
 mp3> .headers[0].header.flags.unsynchronisation.a |= empty
-error: expected an object but got: boolean
+error: delpaths([["headers",0,"header","f ...]) cannot be applied to {"footers":[],"frames":[{" ...: expected an object but got: boolean (false)
 mp3> .headers[0].header.flags.unsynchronisation[0] |= empty
 error: expected an array but got: boolean
 mp3> .headers[0].header.flags.unsynchronisation | setpath(["a"]; 1)
-error: expected an object but got: boolean (false)
+error: setpath(["a"]; 1) cannot be applied to false: expected an object but got: boolean (false)
 mp3> .headers[0].header.flags.unsynchronisation | setpath([0]; 1)
-error: expected an array but got: boolean (false)
+error: setpath([0]; 1) cannot be applied to false: expected an array but got: boolean (false)
 mp3> .headers[0].header.flags.unsynchronisation | delpaths([["a"]])
-error: expected an object but got: boolean (false)
+error: delpaths([["a"]]) cannot be applied to false: expected an object but got: boolean (false)
 mp3> .headers[0].header.flags.unsynchronisation | delpaths([[0]])
-error: expected an array but got: boolean (false)
+error: delpaths([[0]]) cannot be applied to false: expected an array but got: boolean (false)
 mp3> ^D

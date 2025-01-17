@@ -25,20 +25,13 @@ def println: ., "\n" | print;
 def printerr: tostring | _stderr;
 def printerrln: ., "\n" | printerr;
 
-def _debug($name):
-  ( (([$name, .] | tojson) | printerrln)
-  , .
-  );
-
 # jq compat
-def debug: _debug("DEBUG");
-def debug(f): . as $c | f | debug | $c;
+def debug: (["DEBUG:", .] | tojson | printerrln), .;
+def debug(f): (f | debug | empty), .;
+# output raw string or compact json to stderr and let input thru
+def stderr: printerr, .;
 
-# jq compat, output to compact json to stderr and let input thru
-def stderr:
-  ( (tojson | printerr)
-  , .
-  );
+def _fatal_error($code): "error: \(.)\n" | halt_error($code);
 
 # try to be same exit codes as jq
 # TODO: jq seems to halt processing inputs on JSON decode error but not IO errors,
@@ -117,7 +110,7 @@ def _intdiv($a; $b):
   | ($a - ($a % $b)) / $b
   );
 
-# escape " and \
+# escape \ and "
 def _escape_ident: gsub("(?<g>[\\\\\"])"; "\\\(.g)");
 
 # format number with fixed number of decimals

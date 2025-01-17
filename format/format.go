@@ -45,17 +45,17 @@ type Probe_Args_In struct {
 
 var (
 	Image          = &decode.Group{Name: "image"}
-	Probe          = &decode.Group{Name: "probe", DefaultInArg: Probe_In{}}
-	Probe_Args     = &decode.Group{Name: "probe_args", DefaultInArg: Probe_Args_In{}}
-	Link_Frame     = &decode.Group{Name: "link_frame", DefaultInArg: Link_Frame_In{}}   // ex: ethernet
 	INET_Packet    = &decode.Group{Name: "inet_packet", DefaultInArg: INET_Packet_In{}} // ex: ipv4
 	IP_Packet      = &decode.Group{Name: "ip_packet", DefaultInArg: INET_Packet_In{}}   // ex: tcp
+	Link_Frame     = &decode.Group{Name: "link_frame", DefaultInArg: Link_Frame_In{}}   // ex: ethernet
+	MP3_Frame_Tags = &decode.Group{Name: "mp3_frame_tags"}
+	Probe          = &decode.Group{Name: "probe", DefaultInArg: Probe_In{}}
+	Probe_Args     = &decode.Group{Name: "probe_args", DefaultInArg: Probe_Args_In{}}
 	TCP_Stream     = &decode.Group{Name: "tcp_stream", DefaultInArg: TCP_Stream_In{}}   // ex: http
 	UDP_Payload    = &decode.Group{Name: "udp_payload", DefaultInArg: UDP_Payload_In{}} // ex: dns
-	MP3_Frame_Tags = &decode.Group{Name: "mp3_frame_tags"}
 
-	Bytes = &decode.Group{Name: "bytes"}
 	Bits  = &decode.Group{Name: "bits"}
+	Bytes = &decode.Group{Name: "bytes"}
 
 	AAC_Frame           = &decode.Group{Name: "aac_frame"}
 	ADTS                = &decode.Group{Name: "adts"}
@@ -87,6 +87,7 @@ var (
 	BSD_Loopback_Frame  = &decode.Group{Name: "bsd_loopback_frame"}
 	BSON                = &decode.Group{Name: "bson"}
 	Bzip2               = &decode.Group{Name: "bzip2"}
+	CAFF                = &decode.Group{Name: "caff"}
 	CBOR                = &decode.Group{Name: "cbor"}
 	CSV                 = &decode.Group{Name: "csv"}
 	DNS                 = &decode.Group{Name: "dns"}
@@ -95,6 +96,7 @@ var (
 	Ether_8023_Frame    = &decode.Group{Name: "ether8023_frame"}
 	Exif                = &decode.Group{Name: "exif"}
 	Fairplay_SPC        = &decode.Group{Name: "fairplay_spc"}
+	FIT                 = &decode.Group{Name: "fit"}
 	FLAC                = &decode.Group{Name: "flac"}
 	FLAC_Frame          = &decode.Group{Name: "flac_frame"}
 	FLAC_Metadatablock  = &decode.Group{Name: "flac_metadatablock"}
@@ -120,13 +122,20 @@ var (
 	ID3v2               = &decode.Group{Name: "id3v2"}
 	IPv4Packet          = &decode.Group{Name: "ipv4_packet"}
 	IPv6Packet          = &decode.Group{Name: "ipv6_packet"}
+	JP2C                = &decode.Group{Name: "jp2c"}
 	JPEG                = &decode.Group{Name: "jpeg"}
 	JSON                = &decode.Group{Name: "json"}
 	JSONL               = &decode.Group{Name: "jsonl"}
+	LevelDB_Descriptor  = &decode.Group{Name: "leveldb_descriptor"}
+	LevelDB_LDB         = &decode.Group{Name: "leveldb_table"}
+	LevelDB_LOG         = &decode.Group{Name: "leveldb_log"}
+	LuaJIT              = &decode.Group{Name: "luajit"}
 	MachO               = &decode.Group{Name: "macho"}
 	MachO_Fat           = &decode.Group{Name: "macho_fat"}
 	Markdown            = &decode.Group{Name: "markdown"}
 	Matroska            = &decode.Group{Name: "matroska"}
+	MIDI                = &decode.Group{Name: "midi"}
+	MOC3                = &decode.Group{Name: "moc3"}
 	MP3                 = &decode.Group{Name: "mp3"}
 	MP3_Frame           = &decode.Group{Name: "mp3_frame"}
 	MP3_Frame_VBRI      = &decode.Group{Name: "mp3_frame_vbri"}
@@ -134,13 +143,16 @@ var (
 	MP4                 = &decode.Group{Name: "mp4"}
 	MPEG_ASC            = &decode.Group{Name: "mpeg_asc"}
 	MPEG_ES             = &decode.Group{Name: "mpeg_es"}
-	MPES_PES            = &decode.Group{Name: "mpeg_pes"}
 	MPEG_PES_Packet     = &decode.Group{Name: "mpeg_pes_packet"}
 	MPEG_SPU            = &decode.Group{Name: "mpeg_spu"}
 	MPEG_TS             = &decode.Group{Name: "mpeg_ts"}
+	MPES_PES            = &decode.Group{Name: "mpeg_pes"}
 	MsgPack             = &decode.Group{Name: "msgpack"}
+	Negentropy          = &decode.Group{Name: "negentropy"}
+	NES                 = &decode.Group{Name: "nes"}
 	Ogg                 = &decode.Group{Name: "ogg"}
 	Ogg_Page            = &decode.Group{Name: "ogg_page"}
+	Opentimestamps      = &decode.Group{Name: "opentimestamps"}
 	Opus_Packet         = &decode.Group{Name: "opus_packet"}
 	PCAP                = &decode.Group{Name: "pcap"}
 	PCAPNG              = &decode.Group{Name: "pcapng"}
@@ -155,12 +167,14 @@ var (
 	RTMP                = &decode.Group{Name: "rtmp"}
 	SLL_Packet          = &decode.Group{Name: "sll_packet"}
 	SLL2_Packet         = &decode.Group{Name: "sll2_packet"}
+	TAP                 = &decode.Group{Name: "tap"}
 	TAR                 = &decode.Group{Name: "tar"}
 	TCP_Segment         = &decode.Group{Name: "tcp_segment"}
 	TIFF                = &decode.Group{Name: "tiff"}
 	TLS                 = &decode.Group{Name: "tls"}
 	TOML                = &decode.Group{Name: "toml"}
 	Tzif                = &decode.Group{Name: "tzif"}
+	TZX                 = &decode.Group{Name: "tzx"}
 	UDP_Datagram        = &decode.Group{Name: "udp_datagram"}
 	Vorbis_Comment      = &decode.Group{Name: "vorbis_comment"}
 	Vorbis_Packet       = &decode.Group{Name: "vorbis_packet"}
@@ -188,6 +202,11 @@ type AVC_AU_In struct {
 type AVC_DCR_Out struct {
 	LengthSize uint64
 }
+
+type CAFF_In struct {
+	Uncompress bool `doc:"Uncompress and probe files"`
+}
+
 type FLAC_Frame_In struct {
 	SamplesBuf    []byte
 	BitsPerSample int `doc:"Bits per sample"`
@@ -343,7 +362,8 @@ type MP4_In struct {
 }
 
 type AVI_In struct {
-	DecodeSamples bool `doc:"Decode samples"`
+	DecodeSamples        bool `doc:"Decode samples"`
+	DecodeExtendedChunks bool `doc:"Decode extended chunks"`
 }
 
 type Zip_In struct {

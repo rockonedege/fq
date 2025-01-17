@@ -2,6 +2,7 @@ package script
 
 import (
 	"bytes"
+	"cmp"
 	"encoding/hex"
 	"errors"
 	"fmt"
@@ -10,13 +11,13 @@ import (
 	"os"
 	"path/filepath"
 	"regexp"
+	"slices"
 	"strconv"
 	"strings"
 
 	"github.com/wader/fq/internal/shquote"
 	"github.com/wader/fq/pkg/bitio"
 	"github.com/wader/fq/pkg/interp"
-	"golang.org/x/exp/slices"
 )
 
 var unescapeRe = regexp.MustCompile(`\\(?:t|b|n|r|0(?:b[01]{8}|x[0-f]{2}))`)
@@ -117,8 +118,9 @@ func (cr *CaseRun) getEnvInt(name string) int {
 
 func (cr *CaseRun) Platform() interp.Platform {
 	return interp.Platform{
-		OS:   "testos",
-		Arch: "testarch",
+		OS:        "testos",
+		Arch:      "testarch",
+		GoVersion: "testgo_version",
 	}
 }
 
@@ -274,7 +276,7 @@ type Case struct {
 func (c *Case) ToActual() string {
 	var partsLineSorted []part
 	partsLineSorted = append(partsLineSorted, c.Parts...)
-	slices.SortFunc(partsLineSorted, func(a, b part) bool { return a.Line() < b.Line() })
+	slices.SortFunc(partsLineSorted, func(a, b part) int { return cmp.Compare(a.Line(), b.Line()) })
 
 	sb := &strings.Builder{}
 	for _, p := range partsLineSorted {

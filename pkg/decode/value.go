@@ -1,36 +1,37 @@
 package decode
 
 import (
+	"cmp"
 	"errors"
 	"fmt"
+	"slices"
 
 	"github.com/wader/fq/pkg/bitio"
 	"github.com/wader/fq/pkg/ranges"
 	"github.com/wader/fq/pkg/scalar"
-	"golang.org/x/exp/slices"
 )
 
 type Compound struct {
-	IsArray     bool
-	Children    []*Value
 	ByName      map[string]*Value
 	Description string
+	Children    []*Value
+	IsArray     bool
 }
 
 // TODO: Encoding, u16le, varint etc, encode?
 // TODO: Value/Compound interface? can have per type and save memory
 // TODO: Make some fields optional somehow? map/slice?
 type Value struct {
-	Parent      *Value
-	Name        string
 	V           any // scalar.S or Compound (array/struct)
-	Index       int // index in parent array/struct
-	Range       ranges.Range
 	RootReader  bitio.ReaderAtSeeker
-	IsRoot      bool    // TODO: rework?
-	Format      *Format // TODO: rework
-	Description string
 	Err         error
+	Parent      *Value
+	Format      *Format // TODO: rework
+	Name        string
+	Description string
+	Range       ranges.Range
+	Index       int  // index in parent array/struct
+	IsRoot      bool // TODO: rework?
 }
 
 type WalkFn func(v *Value, rootV *Value, depth int, rootDepth int) error
@@ -189,6 +190,9 @@ func (v *Value) postProcess() {
 				if f.IsRoot {
 					continue
 				}
+				if s, ok := f.V.(scalar.Scalarable); ok && s.ScalarFlags().IsSynthetic() {
+					continue
+				}
 
 				if first {
 					v.Range = f.Range
@@ -200,7 +204,9 @@ func (v *Value) postProcess() {
 
 			// sort struct fields and make sure to keep order if range is the same
 			if !vv.IsArray {
-				slices.SortStableFunc(vv.Children, func(a, b *Value) bool { return a.Range.Start < b.Range.Start })
+				slices.SortStableFunc(vv.Children, func(a, b *Value) int {
+					return cmp.Compare(a.Range.Start, b.Range.Start)
+				})
 			}
 
 			v.Index = -1

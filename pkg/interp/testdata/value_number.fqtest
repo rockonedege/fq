@@ -20,7 +20,9 @@ error: expected an array but got: number
 mp3> .headers[0].header.version[-1000:2000] | ., type, length?
 error: expected an array but got: number
 mp3> .headers[0].header.version["test"] | ., type, length?
-error: expected an object but got: number
+null
+"null"
+0
 mp3> [.headers[0].header.version[]] | type, length?
 error: cannot iterate over: number
 mp3> .headers[0].header.version | keys
@@ -80,12 +82,12 @@ mp3> .headers[0].header.version._path | ., type, length?
 4
 mp3> .headers[0].header.version._bits | ., type, length?
    |00 01 02 03 04 05 06 07 08 09 0a 0b 0c 0d 0e 0f|0123456789abcdef|
-0x0|         04                                    |   .            |.: raw bits 0x3-0x3.7 (1)
+0x0|         04                                    |   .            |.: raw bits 0x3-0x4 (1)
 "string"
 8
 mp3> .headers[0].header.version._bytes | ., type, length?
    |00 01 02 03 04 05 06 07 08 09 0a 0b 0c 0d 0e 0f|0123456789abcdef|
-0x0|         04                                    |   .            |.: raw bits 0x3-0x3.7 (1)
+0x0|         04                                    |   .            |.: raw bits 0x3-0x4 (1)
 "string"
 1
 mp3> .headers[0].header.version._error | ., type, length?
@@ -96,19 +98,19 @@ mp3> .headers[0].header.version._gap | ., type, length?
 false
 "boolean"
 mp3> .headers[0].header.version.a = 1
-error: expected an object but got: number (4)
+error: setpath(["headers",0,"header","ve ...]; 1) cannot be applied to {"footers":[],"frames":[{" ...: expected an object but got: number (4)
 mp3> .headers[0].header.version[0] = 1
-error: expected an array but got: number (4)
+error: setpath(["headers",0,"header","ve ...]; 1) cannot be applied to {"footers":[],"frames":[{" ...: expected an array but got: number (4)
 mp3> .headers[0].header.version.a |= empty
-error: expected an object but got: number
+error: delpaths([["headers",0,"header","v ...]) cannot be applied to {"footers":[],"frames":[{" ...: expected an object but got: number (4)
 mp3> .headers[0].header.version[0] |= empty
 error: expected an array but got: number
 mp3> .headers[0].header.version | setpath(["a"]; 1)
-error: expected an object but got: number (4)
+error: setpath(["a"]; 1) cannot be applied to 4: expected an object but got: number (4)
 mp3> .headers[0].header.version | setpath([0]; 1)
-error: expected an array but got: number (4)
+error: setpath([0]; 1) cannot be applied to 4: expected an array but got: number (4)
 mp3> .headers[0].header.version | delpaths([["a"]])
-error: expected an object but got: number (4)
+error: delpaths([["a"]]) cannot be applied to 4: expected an object but got: number (4)
 mp3> .headers[0].header.version | delpaths([[0]])
-error: expected an array but got: number (4)
+error: delpaths([[0]]) cannot be applied to 4: expected an array but got: number (4)
 mp3> ^D

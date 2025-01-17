@@ -47,11 +47,11 @@ def _to_jq($opts):
   );
 def to_jq($opts):
   _to_jq(
-    ( { indent: 0,
-        key_sep: ":",
-        object_sep: ",",
-        array_sep: ",",
-        compound_newline: "",
+    ( { indent: 0
+      , key_sep: ":"
+      , object_sep: ","
+      , array_sep: ","
+      , compound_newline: "",
       } + $opts
     | if .indent > 0  then
         ( .key_sep = ": "
@@ -72,13 +72,16 @@ def from_jq:
     | if . == "TermTypeNull" then null
       elif . == "TermTypeTrue" then true
       elif . == "TermTypeFalse" then false
-      elif . == "TermTypeString" then $v.term.str.str
+      elif . == "TermTypeString" then
+        if $v.term.str.queries then error("string interpolation")
+        else $v.term.str.str
+        end
       elif . == "TermTypeNumber" then $v.term.number | tonumber
       elif . == "TermTypeObject" then
         ( $v.term.object.key_vals // []
         | map(
-            { key: (.key // .key_string.str),
-              value: (.val.queries[0] | _f)
+            { key: (.key // .key_string.str)
+            , value: (.val | _f)
             }
           )
         | from_entries
@@ -87,10 +90,10 @@ def from_jq:
         ( def _a: if .op then .left, .right | _a end;
           [$v.term.array.query // empty | _a | _f]
         )
-      else error("unknown term")
+      else error("unsupported term \($v.term.type)")
       end
     );
   try
     (_query_fromstring | _f)
   catch
-    error("from_jq only supports constant literals");
+    error("from_jq only supports constant literals: \(.)");

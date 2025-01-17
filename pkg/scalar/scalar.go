@@ -12,11 +12,20 @@ import (
 	"strings"
 	"time"
 
-	"github.com/wader/fq/internal/bitioex"
+	"github.com/wader/fq/internal/bitiox"
 	"github.com/wader/fq/pkg/bitio"
 )
 
 //go:generate sh -c "cat scalar_gen.go.tmpl | go run ../../dev/tmpl.go ../decode/types.json | gofmt > scalar_gen.go"
+
+type Scalarable interface {
+	ScalarActual() any
+	ScalarValue() any
+	ScalarSym() any
+	ScalarDescription() string
+	ScalarFlags() Flags
+	ScalarDisplayFormat() DisplayFormat
+}
 
 type DisplayFormat int
 
@@ -41,6 +50,16 @@ func (df DisplayFormat) FormatBase() int {
 		return 0
 	}
 }
+
+const (
+	FlagGap Flags = 1 << iota
+	FlagSynthetic
+)
+
+type Flags uint
+
+func (f Flags) IsGap() bool       { return f&FlagGap != 0 }
+func (f Flags) IsSynthetic() bool { return f&FlagSynthetic != 0 }
 
 // TODO: todos
 // rename raw?
@@ -166,7 +185,7 @@ func (rs SRangeToScalar) MapSint(s Sint) (Sint, error) {
 
 func RawSym(s BitBuf, nBytes int, fn func(b []byte) string) (BitBuf, error) {
 	br := s.Actual
-	brLen, err := bitioex.Len(br)
+	brLen, err := bitiox.Len(br)
 	if err != nil {
 		return BitBuf{}, err
 	}
@@ -211,7 +230,7 @@ func (m RawBytesMap) MapBitBuf(s BitBuf) (BitBuf, error) {
 		return s, err
 	}
 	bb := &bytes.Buffer{}
-	if _, err := bitioex.CopyBits(bb, rc); err != nil {
+	if _, err := bitiox.CopyBits(bb, rc); err != nil {
 		return s, err
 	}
 	for _, bs := range m {
@@ -227,24 +246,35 @@ func (m RawBytesMap) MapBitBuf(s BitBuf) (BitBuf, error) {
 
 var unixTimeEpochDate = time.Date(1970, time.January, 1, 0, 0, 0, 0, time.UTC)
 
-func UintActualDate(epoch time.Time, format string) UintFn {
+func UintActualDateDescription(epoch time.Time, unit time.Duration, format string) UintFn {
 	return UintFn(func(s Uint) (Uint, error) {
-		s.Description = epoch.Add(time.Duration(s.Actual) * time.Second).Format(format)
+		s.Description = epoch.Add(time.Duration(s.Actual) * unit).Format(format)
 		return s, nil
 	})
 }
 
-func UintActualUnixTime(format string) UintFn {
-	return UintActualDate(unixTimeEpochDate, format)
+func UintActualUnixTimeDescription(unit time.Duration, format string) UintFn {
+	return UintActualDateDescription(unixTimeEpochDate, unit, format)
 }
 
-func FltActualDate(epoch time.Time, format string) FltFn {
+func SintActualDateDescription(epoch time.Time, unit time.Duration, format string) SintFn {
+	return SintFn(func(s Sint) (Sint, error) {
+		s.Description = epoch.Add(time.Duration(s.Actual) * unit).Format(format)
+		return s, nil
+	})
+}
+
+func SintActualUnixTimeDescription(unit time.Duration, format string) SintFn {
+	return SintActualDateDescription(unixTimeEpochDate, unit, format)
+}
+
+func FltActualDateDescription(epoch time.Time, unit time.Duration, format string) FltFn {
 	return FltFn(func(s Flt) (Flt, error) {
-		s.Description = epoch.Add(time.Duration(s.Actual) * time.Second).Format(format)
+		s.Description = epoch.Add(time.Duration(s.Actual) * unit).Format(format)
 		return s, nil
 	})
 }
 
-func FltActualUnixTime(format string) FltFn {
-	return FltActualDate(unixTimeEpochDate, format)
+func FltActualUnixTimeDescription(unit time.Duration, format string) FltFn {
+	return FltActualDateDescription(unixTimeEpochDate, unit, format)
 }

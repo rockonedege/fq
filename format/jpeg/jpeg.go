@@ -124,7 +124,7 @@ var markers = scalar.UintMap{
 	RST6:  {Sym: "rst6", Description: "Restart with modulo 8 count 6"},
 	RST7:  {Sym: "rst7", Description: "Restart with modulo 8 count 7"},
 	SOI:   {Sym: "soi", Description: "Start of image"},
-	EOI:   {Sym: "eoi", Description: "End of image true"},
+	EOI:   {Sym: "eoi", Description: "End of image"},
 	SOS:   {Sym: "sos", Description: "Start of scan"},
 	DQT:   {Sym: "dqt", Description: "Define quantization table(s)"},
 	DNL:   {Sym: "dnl", Description: "Define number of lines"},
@@ -257,6 +257,29 @@ func jpegDecode(d *decode.D) any {
 										d.FieldArrayLoop("q", func() bool { return qK < 64 }, func(d *decode.D) {
 											d.FieldU("q", qBits)
 											qK++
+										})
+									})
+								}
+							})
+						})
+					case DHT:
+						lH := int64(d.FieldU16("lh"))
+						d.FramedFn(lH*8-16, func(d *decode.D) {
+							d.FieldArray("hs", func(d *decode.D) {
+								for d.NotEnd() {
+									d.FieldStruct("h", func(d *decode.D) {
+										d.FieldU4("tc")
+										d.FieldU4("th")
+										hK := uint64(0)
+										hV := uint64(0)
+										d.FieldArrayLoop("l", func() bool { return hK < 16 }, func(d *decode.D) {
+											hV += d.FieldU8("l")
+											hK++
+										})
+										hK = 0
+										d.FieldArrayLoop("v", func() bool { return hK < hV }, func(d *decode.D) {
+											d.FieldU8("v")
+											hK++
 										})
 									})
 								}
