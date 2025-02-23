@@ -8,22 +8,32 @@ $ fq -n _registry.groups.probe
   "bitcoin_blkdat",
   "bplist",
   "bzip2",
+  "caff",
   "elf",
+  "fit",
   "flac",
   "gif",
   "gzip",
+  "jp2c",
   "jpeg",
+  "leveldb_table",
+  "luajit",
   "macho",
   "macho_fat",
   "matroska",
+  "midi",
+  "moc3",
   "mp4",
+  "nes",
   "ogg",
+  "opentimestamps",
   "pcap",
   "pcapng",
   "png",
   "tar",
   "tiff",
   "tzif",
+  "tzx",
   "wasm",
   "webp",
   "zip",
@@ -71,6 +81,7 @@ bsd_loopback_frame   BSD loopback frame
 bson                 Binary JSON
 bytes                Raw bytes
 bzip2                bzip2 compression
+caff                 Live2D Cubism archive
 cbor                 Concise Binary Object Representation
 csv                  Comma separated values
 dns                  DNS packet
@@ -79,6 +90,7 @@ elf                  Executable and Linkable Format
 ether8023_frame      Ethernet 802.3 frame
 exif                 Exchangeable Image File Format
 fairplay_spc         FairPlay Server Playback Context
+fit                  Garmin Flexible and Interoperable Data Transfer
 flac                 Free Lossless Audio Codec file
 flac_frame           FLAC frame
 flac_metadatablock   FLAC metadatablock
@@ -103,13 +115,20 @@ id3v11               ID3v1.1 metadata
 id3v2                ID3v2 metadata
 ipv4_packet          Internet protocol v4 packet
 ipv6_packet          Internet protocol v6 packet
+jp2c                 JPEG 2000 codestream
 jpeg                 Joint Photographic Experts Group file
 json                 JavaScript Object Notation
 jsonl                JavaScript Object Notation Lines
+leveldb_descriptor   LevelDB Descriptor
+leveldb_log          LevelDB Log
+leveldb_table        LevelDB Table
+luajit               LuaJIT 2.0 bytecode
 macho                Mach-O macOS executable
 macho_fat            Fat Mach-O macOS executable (multi-architecture)
 markdown             Markdown
 matroska             Matroska file
+midi                 Standard MIDI file
+moc3                 MOC3 file
 mp3                  MP3 file
 mp3_frame            MPEG audio layer 3 frame
 mp3_frame_vbri       MP3 frame Fraunhofer encoder variable bitrate tag
@@ -122,8 +141,11 @@ mpeg_pes_packet      MPEG Packetized elementary stream packet
 mpeg_spu             Sub Picture Unit (DVD subtitle)
 mpeg_ts              MPEG Transport Stream
 msgpack              MessagePack
+negentropy           Negentropy message
+nes                  iNES/NES 2.0 cartridge ROM format
 ogg                  OGG file
 ogg_page             OGG page
+opentimestamps       OpenTimestamps file
 opus_packet          Opus packet
 pcap                 PCAP packet capture
 pcapng               PCAPNG packet capture
@@ -138,12 +160,14 @@ pssh_playready       PlayReady PSSH
 rtmp                 Real-Time Messaging Protocol
 sll2_packet          Linux cooked capture encapsulation v2
 sll_packet           Linux cooked capture encapsulation
+tap                  TAP tape format for ZX Spectrum computers
 tar                  Tar archive
 tcp_segment          Transmission control protocol segment
 tiff                 Tag Image File Format
 tls                  Transport layer security
 toml                 Tom's Obvious, Minimal Language
 tzif                 Time Zone Information Format
+tzx                  TZX tape format for ZX Spectrum computers
 udp_datagram         User datagram protocol
 vorbis_comment       Vorbis comment
 vorbis_packet        Vorbis packet

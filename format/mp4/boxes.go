@@ -53,7 +53,7 @@ var subTypeNames = scalar.StrMapDescription{
 	"subp": "Subpicture",
 	"text": "Text",
 	"tmcd": "Time Code",
-	"url ": "URL",
+	"url":  "URL",
 	"vide": "Video Track",
 }
 
@@ -101,7 +101,7 @@ var dataFormatNames = scalar.StrMapDescription{
 	"encs": "Encrypted Systems stream",
 	"enct": "Encrypted Text",
 	"encv": "Encrypted/protected video",
-	"fdp ": "File delivery hints",
+	"fdp":  "File delivery hints",
 	"fLaC": "Fres Lossless Audio Codec",
 	"g719": "ITU-T Recommendation G.719 (2008)",
 	"g726": "ITU-T Recommendation G.726 (1990)",
@@ -138,13 +138,13 @@ var dataFormatNames = scalar.StrMapDescription{
 	"Opus": "Opus audio coding",
 	"pm2t": "Protected MPEG-2 Transport",
 	"prtp": "Protected RTP Reception",
-	"raw ": "Uncompressed audio",
+	"raw":  "Uncompressed audio",
 	"resv": "Restricted Video",
 	"rm2t": "MPEG-2 Transport Reception",
 	"rrtp": "RTP reception",
 	"rsrp": "SRTP Reception",
 	"rtmd": "Real Time Metadata Sample Entry(XAVC Format)",
-	"rtp ": "RTP Hints",
+	"rtp":  "RTP Hints",
 	"s263": "ITU H.263 video (3GPP format)",
 	"samr": "Narrowband AMR voice",
 	"sawb": "Wideband AMR voice",
@@ -207,7 +207,7 @@ func decodeLang(d *decode.D) string {
 // Quicktime time seconds in January 1, 1904 UTC
 var quicktimeEpochDate = time.Date(1904, time.January, 1, 0, 0, 0, 0, time.UTC)
 
-var uintActualQuicktimeEpoch = scalar.UintActualDate(quicktimeEpochDate, time.RFC3339)
+var uintActualQuicktimeEpochDescription = scalar.UintActualDateDescription(quicktimeEpochDate, time.Second, time.RFC3339)
 
 func decodeMvhdFieldMatrix(d *decode.D, name string) {
 	d.FieldStruct(name, func(d *decode.D) {
@@ -247,15 +247,14 @@ func decodeSampleFlags(d *decode.D) {
 }
 
 func decodeBoxWithParentData(ctx *decodeContext, d *decode.D, parentData any, extraTypeMappers ...scalar.StrMapper) {
-	var typ string
 	var dataSize uint64
-	typeMappers := []scalar.StrMapper{boxDescriptions}
+	typeMappers := []scalar.StrMapper{scalar.ActualTrimSpace, boxDescriptions}
 	if len(extraTypeMappers) > 0 {
 		typeMappers = append(typeMappers, extraTypeMappers...)
 	}
 
 	boxSize := d.FieldU32("size", boxSizeNames)
-	typ = d.FieldStr("type", 4, charmap.ISO8859_1, typeMappers...)
+	typ := d.FieldStr("type", 4, charmap.ISO8859_1, typeMappers...)
 
 	switch boxSize {
 	case boxSizeRestOfFile:
@@ -304,12 +303,16 @@ func decodeBoxesWithParentData(ctx *decodeContext, d *decode.D, parentData any, 
 	}
 }
 
+type rootBox struct {
+	ftypMajorBrand string
+}
+
 type irefBox struct {
 	version int
 }
 
 type trakBox struct {
-	trackID int
+	track *track
 }
 
 type moofBox struct {
@@ -317,7 +320,7 @@ type moofBox struct {
 }
 
 type trafBox struct {
-	trackID        int
+	track          *track
 	baseDataOffset int64
 	moof           *moof
 }
@@ -336,13 +339,7 @@ type keysBox struct {
 	keys []keysBoxKey
 }
 
-func decodeBoxIrefEntry(ctx *decodeContext, d *decode.D) {
-	irefBox, ok := ctx.parent().data.(*irefBox)
-	if !ok {
-		d.FieldRawLen("data", d.BitsLeft())
-		return
-	}
-
+func decodeBoxIrefEntry(irefBox *irefBox, d *decode.D) {
 	idSize := 16
 	if irefBox.version != 0 {
 		idSize = 32
@@ -358,11 +355,15 @@ func decodeBoxIrefEntry(ctx *decodeContext, d *decode.D) {
 	})
 }
 
-func decodeBoxFtyp(d *decode.D) {
-	brand := d.FieldUTF8("major_brand", 4)
+func decodeBoxFtyp(ctx *decodeContext, d *decode.D) {
+	root := ctx.rootBox()
+
+	brand := d.FieldUTF8("major_brand", 4, scalar.ActualTrimSpace)
+	root.ftypMajorBrand = brand
+
 	d.FieldU32("minor_version", scalar.UintFn(func(s scalar.Uint) (scalar.Uint, error) {
 		switch brand {
-		case "qt  ":
+		case "qt":
 			// https://developer.apple.com/library/archive/documentation/QuickTime/QTFF/QTFFChap1/qtff1.html#//apple_ref/doc/uid/TP40000939-CH203-BBCGDDDF
 			// "For QuickTime movie files, this takes the form of four binary-coded decimal values, indicating the century,
 			//  year, and month of the QuickTime File Format Specification, followed by a binary coded decimal zero. For example,
@@ -382,21 +383,21 @@ func decodeBoxFtyp(d *decode.D) {
 func decodeBox(ctx *decodeContext, d *decode.D, typ string) {
 	switch typ {
 	case "ftyp":
-		decodeBoxFtyp(d)
+		decodeBoxFtyp(ctx, d)
 	case "styp":
-		decodeBoxFtyp(d)
+		decodeBoxFtyp(ctx, d)
 	case "mvhd":
 		version := d.FieldU8("version")
 		d.FieldU24("flags")
 		switch version {
 		case 0:
-			d.FieldU32("creation_time", uintActualQuicktimeEpoch)
-			d.FieldU32("modification_time", uintActualQuicktimeEpoch)
+			d.FieldU32("creation_time", uintActualQuicktimeEpochDescription)
+			d.FieldU32("modification_time", uintActualQuicktimeEpochDescription)
 			d.FieldU32("time_scale")
 			d.FieldU32("duration")
 		case 1:
-			d.FieldU64("creation_time", uintActualQuicktimeEpoch)
-			d.FieldU64("modification_time", uintActualQuicktimeEpoch)
+			d.FieldU64("creation_time", uintActualQuicktimeEpochDescription)
+			d.FieldU64("modification_time", uintActualQuicktimeEpochDescription)
 			d.FieldU32("time_scale")
 			d.FieldU64("duration")
 		default:
@@ -414,7 +415,11 @@ func decodeBox(ctx *decodeContext, d *decode.D, typ string) {
 		d.FieldU32("current_time")
 		d.FieldU32("next_track_id")
 	case "trak":
-		decodeBoxesWithParentData(ctx, d, &trakBox{})
+		t := &track{}
+		ctx.tracks = append(ctx.tracks, t)
+		decodeBoxesWithParentData(ctx, d, &trakBox{
+			track: t,
+		})
 	case "edts":
 		decodeBoxes(ctx, d)
 	case "elst":
@@ -450,14 +455,14 @@ func decodeBox(ctx *decodeContext, d *decode.D, typ string) {
 		})
 		switch version {
 		case 0:
-			d.FieldU32("creation_time", uintActualQuicktimeEpoch)
-			d.FieldU32("modification_time", uintActualQuicktimeEpoch)
+			d.FieldU32("creation_time", uintActualQuicktimeEpochDescription)
+			d.FieldU32("modification_time", uintActualQuicktimeEpochDescription)
 			trackID = int(d.FieldU32("track_id"))
 			d.FieldU32("reserved1")
 			d.FieldU32("duration")
 		case 1:
-			d.FieldU64("creation_time", uintActualQuicktimeEpoch)
-			d.FieldU64("modification_time", uintActualQuicktimeEpoch)
+			d.FieldU64("creation_time", uintActualQuicktimeEpochDescription)
+			d.FieldU64("modification_time", uintActualQuicktimeEpochDescription)
 			trackID = int(d.FieldU32("track_id"))
 			d.FieldU32("reserved1")
 			d.FieldU64("duration")
@@ -474,8 +479,7 @@ func decodeBox(ctx *decodeContext, d *decode.D, typ string) {
 		d.FieldFP32("track_height")
 
 		if t := ctx.currentTrakBox(); t != nil {
-			t.trackID = trackID
-			_ = ctx.currentTrack()
+			t.track.id = trackID
 		}
 	case "mdia":
 		decodeBoxes(ctx, d)
@@ -485,13 +489,13 @@ func decodeBox(ctx *decodeContext, d *decode.D, typ string) {
 		// TODO: timestamps
 		switch version {
 		case 0:
-			d.FieldU32("creation_time", uintActualQuicktimeEpoch)
-			d.FieldU32("modification_time", uintActualQuicktimeEpoch)
+			d.FieldU32("creation_time", uintActualQuicktimeEpochDescription)
+			d.FieldU32("modification_time", uintActualQuicktimeEpochDescription)
 			d.FieldU32("time_scale")
 			d.FieldU32("duration")
 		case 1:
-			d.FieldU64("creation_time", uintActualQuicktimeEpoch)
-			d.FieldU64("modification_time", uintActualQuicktimeEpoch)
+			d.FieldU64("creation_time", uintActualQuicktimeEpochDescription)
+			d.FieldU64("modification_time", uintActualQuicktimeEpochDescription)
 			d.FieldU32("time_scale")
 			d.FieldU64("duration")
 		default:
@@ -510,15 +514,28 @@ func decodeBox(ctx *decodeContext, d *decode.D, typ string) {
 			d.FieldU16("value")
 		})
 	case "hdlr":
+		majorBrand := ctx.rootBox().ftypMajorBrand
+
 		d.FieldU8("version")
 		d.FieldU24("flags")
 		d.FieldUTF8NullFixedLen("component_type", 4)
-		subType := d.FieldUTF8("component_subtype", 4, subTypeNames, scalar.ActualTrimSpace)
+		subType := d.FieldUTF8("component_subtype", 4, scalar.ActualTrimSpace, subTypeNames)
 		d.FieldUTF8NullFixedLen("component_manufacturer", 4)
 		d.FieldU32("component_flags")
 		d.FieldU32("component_flags_mask")
-		// TODO: sometimes has a length prefix byte, how to know?
-		d.FieldUTF8NullFixedLen("component_name", int(d.BitsLeft()/8))
+
+		switch majorBrand {
+		case "qt":
+			// qt brand seems to use length prefixed strings
+			// From QuickTime File Format specification:
+			// > A (counted) string that specifies the name of the component—that is, the media handler used
+			// > when this media was created. This field may contain a zero-length (empty) string.
+			if d.BitsLeft() > 0 {
+				d.FieldUTF8ShortStringFixedLen("component_name", int(d.BitsLeft()/8))
+			}
+		default:
+			d.FieldUTF8NullFixedLen("component_name", int(d.BitsLeft()/8))
+		}
 
 		if t := ctx.currentTrack(); t != nil {
 			t.seenHdlr = true
@@ -539,15 +556,27 @@ func decodeBox(ctx *decodeContext, d *decode.D, typ string) {
 		d.FieldU24("flags")
 		entryCount := d.FieldU32("entry_count")
 		var i uint64
+		var drefURL string
 		d.FieldStructArrayLoop("boxes", "box", func() bool { return i < entryCount }, func(d *decode.D) {
 			size := d.FieldU32("size")
-			d.FieldUTF8("type", 4)
+			typ := d.FieldUTF8("type", 4, scalar.ActualTrimSpace)
 			d.FieldU8("version")
 			d.FieldU24("flags")
 			dataSize := size - 12
-			d.FieldRawLen("data", int64(dataSize*8))
+			switch typ {
+			case "url":
+				drefURL = d.FieldUTF8("data", int(dataSize))
+			default:
+				d.FieldRawLen("data", int64(dataSize*8))
+			}
 			i++
 		})
+
+		if t := ctx.currentTrack(); t != nil {
+			t.dref = true
+			t.drefURL = drefURL
+		}
+
 	case "stbl":
 		decodeBoxes(ctx, d)
 	case "stsd":
@@ -560,15 +589,16 @@ func decodeBox(ctx *decodeContext, d *decode.D, typ string) {
 		d.FieldArrayLoop("boxes", func() bool { return i < entryCount }, func(d *decode.D) {
 			d.FieldStruct("box", func(d *decode.D) {
 				size := d.FieldU32("size")
-				dataFormat := d.FieldUTF8("type", 4, dataFormatNames)
+				dataFormat := d.FieldUTF8("type", 4, dataFormatNames, scalar.ActualTrimSpace)
 				subType := ""
-				if t := ctx.currentTrack(); t != nil {
-					t.sampleDescriptions = append(t.sampleDescriptions, sampleDescription{
+				track := ctx.currentTrack()
+				if track != nil {
+					track.sampleDescriptions = append(track.sampleDescriptions, sampleDescription{
 						dataFormat: dataFormat,
 					})
 
-					if t.seenHdlr {
-						subType = t.subType
+					if track.seenHdlr {
+						subType = track.subType
 					} else {
 						// TODO: seems to be ffmpeg mov.c, where is this documented in specs?
 						// no hdlr box found, guess using dataFormat
@@ -588,7 +618,6 @@ func decodeBox(ctx *decodeContext, d *decode.D, typ string) {
 
 					switch subType {
 					case "soun", "vide":
-
 						version := d.FieldU16("version")
 						d.FieldU16("revision_level")
 						d.FieldU32("max_packet_size") // TODO: vendor for some subtype?
@@ -597,9 +626,10 @@ func decodeBox(ctx *decodeContext, d *decode.D, typ string) {
 						case "soun":
 							// AudioSampleEntry
 							// https://developer.apple.com/library/archive/documentation/QuickTime/QTFF/QTFFChap3/qtff3.html#//apple_ref/doc/uid/TP40000939-CH205-SW1
+							var numAudioChannels uint64
 							switch version {
 							case 0:
-								d.FieldU16("num_audio_channels")
+								numAudioChannels = d.FieldU16("num_audio_channels")
 								d.FieldU16("sample_size")
 								d.FieldU16("compression_id")
 								d.FieldU16("packet_size")
@@ -608,7 +638,7 @@ func decodeBox(ctx *decodeContext, d *decode.D, typ string) {
 									decodeBoxes(ctx, d)
 								}
 							case 1:
-								d.FieldU16("num_audio_channels")
+								numAudioChannels = d.FieldU16("num_audio_channels")
 								d.FieldU16("sample_size")
 								d.FieldU16("compression_id")
 								d.FieldU16("packet_size")
@@ -628,7 +658,7 @@ func decodeBox(ctx *decodeContext, d *decode.D, typ string) {
 								d.FieldU32("always_65536")
 								d.FieldU32("size_of_struct_only")
 								d.FieldF64("audio_sample_rate")
-								d.FieldU32("num_audio_channels")
+								numAudioChannels = d.FieldU32("num_audio_channels")
 								d.FieldU32("always_7f000000")
 								d.FieldU32("const_bits_per_channel")
 								d.FieldU32("format_specific_flags")
@@ -639,6 +669,9 @@ func decodeBox(ctx *decodeContext, d *decode.D, typ string) {
 								}
 							default:
 								d.FieldRawLen("data", d.BitsLeft())
+							}
+							if track != nil {
+								track.stsdNumAudioChannels = numAudioChannels
 							}
 						case "vide":
 							// VideoSampleEntry
@@ -682,7 +715,7 @@ func decodeBox(ctx *decodeContext, d *decode.D, typ string) {
 			panic(fmt.Sprintf("expected AvcDcrOut got %#+v", v))
 		}
 		if t := ctx.currentTrack(); t != nil {
-			t.formatInArg = format.AVC_AU_In{LengthSize: avcDcrOut.LengthSize} //nolint:gosimple
+			t.formatInArg = format.AVC_AU_In(avcDcrOut)
 		}
 	case "hvcC":
 		_, v := d.FieldFormat("descriptor", &hevcCDCRGroup, nil)
@@ -691,7 +724,7 @@ func decodeBox(ctx *decodeContext, d *decode.D, typ string) {
 			panic(fmt.Sprintf("expected HevcDcrOut got %#+v", v))
 		}
 		if t := ctx.currentTrack(); t != nil {
-			t.formatInArg = format.HEVC_AU_In{LengthSize: hevcDcrOut.LengthSize} //nolint:gosimple
+			t.formatInArg = format.HEVC_AU_In(hevcDcrOut)
 		}
 	case "dfLa":
 		d.FieldU8("version")
@@ -714,6 +747,9 @@ func decodeBox(ctx *decodeContext, d *decode.D, typ string) {
 		d.FieldU8("version")
 		d.FieldU24("flags")
 		d.FieldFormat("descriptor", &vpxCCRGroup, nil)
+	case "iods":
+		d.FieldU32("version")
+		d.FieldFormat("descriptor", &mpegESGroup, nil)
 	case "esds":
 		d.FieldU32("version")
 		_, v := d.FieldFormat("descriptor", &mpegESGroup, nil)
@@ -859,10 +895,10 @@ func decodeBox(ctx *decodeContext, d *decode.D, typ string) {
 		var i uint64
 		d.FieldStructArrayLoop("entries", "entry", func() bool { return i < entryCount }, func(d *decode.D) {
 			d.FieldS32("sample_count")
+			// ISO/IEC14496-12 says version 0 is unsigned and version 1 is signed
+			// in preactice it seems muxers write it as signed for both version
 			switch version {
-			case 0:
-				d.FieldU32("sample_offset")
-			case 1:
+			case 0, 1:
 				d.FieldS32("sample_offset")
 			}
 			i++
@@ -945,16 +981,17 @@ func decodeBox(ctx *decodeContext, d *decode.D, typ string) {
 	case "moof":
 		offset := (d.Pos() / 8) - 8
 		decodeBoxesWithParentData(ctx, d, &moofBox{offset: offset})
-		// Track Fragment
-	case "traf":
-		decodeBoxesWithParentData(ctx, d, &trafBox{})
-		// Movie Fragment Header
-	case "mfhd":
+	case "traf": // Track Fragment
+		t := &track{fragment: true}
+		ctx.tracks = append(ctx.tracks, t)
+		decodeBoxesWithParentData(ctx, d, &trafBox{
+			track: t,
+		})
+	case "mfhd": // Movie Fragment Header
 		d.FieldU8("version")
 		d.FieldU24("flags")
 		d.FieldU32("sequence_number")
-		// Track Fragment Header
-	case "tfhd":
+	case "tfhd": // Track Fragment Header
 		d.FieldU8("version")
 		baseDataOffsetPresent := false
 		sampleDescriptionIndexPresent := false
@@ -997,15 +1034,14 @@ func decodeBox(ctx *decodeContext, d *decode.D, typ string) {
 		}
 
 		if t := ctx.currentTrafBox(); t != nil {
-			t.trackID = trackID
+			t.track.id = trackID
 			t.moof = m
 			t.baseDataOffset = baseDataOffset
 		}
 		if t := ctx.currentTrack(); t != nil {
 			t.moofs = append(t.moofs, m)
 		}
-		// Track Fragment Run
-	case "trun":
+	case "trun": // Track Fragment Run
 		m := &moof{}
 		if t := ctx.currentTrafBox(); t != nil {
 			m = t.moof
@@ -1121,9 +1157,9 @@ func decodeBox(ctx *decodeContext, d *decode.D, typ string) {
 		d.FieldU8("version")
 		d.FieldU24("flags")
 		d.FieldU32("mfra_size")
+
+	case "iloc": // HEIC image
 		// TODO: item location
-		// HEIC image
-	case "iloc":
 		version := d.FieldU8("version")
 		d.FieldU24("flags")
 
@@ -1210,7 +1246,7 @@ func decodeBox(ctx *decodeContext, d *decode.D, typ string) {
 				if !d.End() {
 					d.FieldUTF8Null("content_encoding")
 				}
-			case "uri ":
+			case "uri":
 				d.FieldUTF8Null("item_uri_type")
 			}
 		}
@@ -1234,7 +1270,7 @@ func decodeBox(ctx *decodeContext, d *decode.D, typ string) {
 		// ISO-639-2/T as 3*5 bit integers - 0x60
 		d.FieldStrFn("language", func(d *decode.D) string {
 			s := ""
-			for i := 0; i < 3; i++ {
+			for range 3 {
 				s += fmt.Sprintf("%c", int(d.U5())+0x60)
 			}
 			return s
@@ -1367,27 +1403,48 @@ func decodeBox(ctx *decodeContext, d *decode.D, typ string) {
 	case "sgpd":
 		version := d.FieldU8("version")
 		d.FieldU24("flags")
-		d.FieldUTF8("grouping_type", 4)
+		var groupingType = d.FieldUTF8("grouping_type", 4)
 		var defaultLength uint64
 		if version == 1 {
 			defaultLength = d.FieldU32("default_length")
-		}
-		if version >= 2 {
+		} else if version >= 2 {
 			d.FieldU32("default_sample_description_index")
 		}
 		entryCount := d.FieldU32("entry_count")
-		d.FieldArray("entries", func(d *decode.D) {
-			for i := uint64(0); i < entryCount; i++ {
-				entryLen := defaultLength
-				if version == 1 {
-					if defaultLength == 0 {
-						entryLen = d.FieldU32("description_length")
-					} else if entryLen == 0 {
-						d.Fatalf("sgpd groups entry len <= 0 version 1")
-					}
+
+		d.FieldStructNArray("entries", "entry", int64(entryCount), func(d *decode.D) {
+			entryLen := defaultLength
+			if version == 1 {
+				if defaultLength == 0 {
+					entryLen = d.FieldU32("description_length")
 				} else if entryLen == 0 {
-					d.Fatalf("sgpd groups entry len <= 0")
+					d.Fatalf("sgpd groups entry len == 0")
 				}
+			} else if entryLen == 0 {
+				// TODO: this is likely a mistake: here version is != 1, so defaultLength is default (i.e. 0),
+				// TODO: so entryLen is also 0. So for version != 1 this fatal should always throw
+				d.Fatalf("sgpd groups entry len == 0")
+			}
+			// CENC Sample Encryption Info Entries
+			switch groupingType {
+			case "seig":
+				d.FieldU8("reserved")
+				d.FieldU4("crypto_bytes")
+				d.FieldU4("skip_bytes")
+				isEncrypted := d.FieldU8("is_encrypted")
+				perSampleIVSize := d.FieldU8("per_sample_iv_size")
+				d.FieldRawLen("kid", 8*16)
+				if isEncrypted != 0 {
+					// If perSampleIVSize > 0 then
+					if perSampleIVSize == 0 {
+						// This means whole fragment is encrypted with a constant IV
+						iVSize := d.FieldU8("constant_iv_size")
+						d.FieldRawLen("constant_iv", 8*int64(iVSize))
+					}
+				}
+			case "roll":
+				d.FieldU16("roll_distance")
+			default:
 				d.FieldRawLen("data", int64(entryLen)*8)
 			}
 		})
@@ -1655,11 +1712,26 @@ func decodeBox(ctx *decodeContext, d *decode.D, typ string) {
 		d.FieldU24("flags")
 		decodeBoxesWithParentData(ctx, d, &irefBox{version: int(version)})
 	case "dimg":
-		decodeBoxIrefEntry(ctx, d)
+		if irefBox, ok := ctx.parent().data.(*irefBox); ok {
+			decodeBoxIrefEntry(irefBox, d)
+		} else {
+			d.FieldRawLen("data", d.BitsLeft())
+		}
 	case "thmb":
-		decodeBoxIrefEntry(ctx, d)
+		if irefBox, ok := ctx.parent().data.(*irefBox); ok {
+			decodeBoxIrefEntry(irefBox, d)
+		} else {
+			d.FieldU8("version")
+			d.FieldU24("flags")
+			d.FieldUTF8("format", 4)
+			d.FieldFormatOrRawLen("image", d.BitsLeft(), &imageGroup, nil)
+		}
 	case "cdsc":
-		decodeBoxIrefEntry(ctx, d)
+		if irefBox, ok := ctx.parent().data.(*irefBox); ok {
+			decodeBoxIrefEntry(irefBox, d)
+		} else {
+			d.FieldRawLen("data", d.BitsLeft())
+		}
 	case "irot":
 		d.FieldU8("rotation", scalar.UintMapSymUint{
 			0: 0,
@@ -1682,6 +1754,170 @@ func decodeBox(ctx *decodeContext, d *decode.D, typ string) {
 				})
 			}
 		})
+	case "cslg":
+		version := d.FieldU8("version")
+		d.FieldU24("flags")
+		switch version {
+		case 0:
+			d.FieldS32("composition_to_dts_shift")
+			d.FieldS32("least_decode_to_display_delta")
+			d.FieldS32("greatest_decode_to_display_delta")
+			d.FieldS32("composition_start_time")
+			d.FieldS32("composition_end_time")
+		case 1:
+			d.FieldS64("composition_to_dts_shift")
+			d.FieldS64("least_decode_to_display_delta")
+			d.FieldS64("greatest_decode_to_display_delta")
+			d.FieldS64("composition_start_time")
+			d.FieldS64("composition_end_time")
+		default:
+			d.FieldRawLen("data", d.BitsLeft())
+		}
+	case "emsg":
+		// https://aomediacodec.github.io/id3-emsg/
+		version := d.FieldU8("version")
+		d.FieldU24("flags")
+		var schemeIdUri string
+		switch version {
+		case 0:
+			schemeIdUri = d.FieldUTF8Null("scheme_id_uri")
+			d.FieldUTF8Null("value")
+			d.FieldU32("timescale")
+			d.FieldU32("presentation_time_delta")
+			d.FieldU32("event_duration")
+			d.FieldU32("id")
+		case 1:
+			d.FieldU32("timescale")
+			d.FieldU64("presentation_time")
+			d.FieldU32("event_duration")
+			d.FieldU32("id")
+			schemeIdUri = d.FieldUTF8Null("scheme_id_uri")
+			d.FieldUTF8Null("value")
+		default:
+			d.FieldRawLen("data", d.BitsLeft())
+		}
+		switch schemeIdUri {
+		case "https://aomedia.org/emsg/ID3":
+			d.FieldFormat("message_data", &id3v2Group, nil)
+		default:
+			d.FieldRawLen("message_data", d.BitsLeft())
+		}
+	case "jp2h":
+		decodeBoxes(ctx, d)
+	case "ihdr":
+		d.FieldU32("width")
+		d.FieldU32("height")
+		d.FieldU16("nc")
+		d.FieldU8("bpc", scalar.UintActualAdd(1))
+		d.FieldU8("c", scalar.UintMapSymStr{
+			0: "uncompressed",
+			1: "modified_huffman",
+			2: "modified_read",
+			3: "modified_modified_read",
+			4: "jbig_bi_level",
+			5: "jpeg",
+			6: "jpeg_ls",
+			7: "jpeg_2000",
+			8: "jbig2",
+			9: "jbig",
+		})
+		d.FieldU8("unk_c")
+		d.FieldU8("ipr")
+	case "jP":
+		d.FieldRawLen("signature", 4*8, d.AssertBitBuf([]byte{0x0d, 0x0a, 0x87, 0x0a}))
+	case "jp2c":
+		d.FieldFormat("segments", &jp2cGroup, nil)
+	case "uinf":
+		decodeBoxes(ctx, d)
+	case "ulst":
+		nu := d.FieldU16("nu")
+		d.FieldArray("uids", func(d *decode.D) {
+			for range int(nu) {
+				d.FieldRawLen("uid", 128)
+			}
+		})
+	case "pcmC":
+		d.FieldU8("version")
+		d.FieldU24("flags")
+		d.FieldU8("format_flags")
+		d.FieldU8("sample_size")
+	case "chnl":
+		version := d.FieldU8("version")
+		d.FieldU24("flags")
+
+		if version == 0 {
+			hasObjects := false
+			hasChannels := false
+			d.FieldStruct("stream_structure", func(d *decode.D) {
+				d.FieldRawLen("unused", 6)
+				hasObjects = d.FieldBool("objects")
+				hasChannels = d.FieldBool("channels")
+			})
+			if hasChannels {
+				definedLayout := d.FieldU8("defined_layout")
+				if definedLayout == 0 {
+					track := ctx.currentTrack()
+					if track == nil {
+						d.FieldRawLen("rest", d.BitsLeft())
+						break
+					}
+					d.FieldArray("channels", func(d *decode.D) {
+						for i := 0; i < int(track.stsdNumAudioChannels); i++ {
+							d.FieldStruct("channel", func(d *decode.D) {
+								speakerPosition := d.FieldU8("speaker_position")
+								if speakerPosition == 126 {
+									d.FieldS16("azimuth")
+									d.FieldS8("elevation")
+								}
+							})
+						}
+					})
+				} else {
+					d.FieldU64("omitted_channels_map")
+				}
+			}
+			if hasObjects {
+				d.FieldU8("object_count")
+			}
+		} else {
+			hasChannels := false
+			d.FieldStruct("stream_structure", func(d *decode.D) {
+				d.FieldRawLen("unused", 2)
+				d.FieldBool("objects")
+				hasChannels = d.FieldBool("channels")
+			})
+			d.FieldU4("format_ordering")
+			d.FieldU8("base_channel_count")
+			if hasChannels {
+				definedLayout := d.FieldU8("defined_layout")
+				if definedLayout == 0 {
+					layoutChannelCount := d.FieldU8("layout_channel_count")
+					d.FieldArray("channels", func(d *decode.D) {
+						for i := 0; i < int(layoutChannelCount); i++ {
+							d.FieldStruct("channel", func(d *decode.D) {
+								speakerPosition := d.FieldU8("speaker_position")
+								if speakerPosition == 126 {
+									d.FieldS16("azimuth")
+									d.FieldS8("elevation")
+								}
+							})
+						}
+					})
+				} else {
+					d.FieldRawLen("reserved", 4)
+					d.FieldU3("channel_order_definition")
+					omittedChannelsPresent := d.FieldBool("omitted_channels_present")
+					if omittedChannelsPresent {
+						d.FieldU64("omitted_channels_map")
+					}
+				}
+			}
+			// if hasObjects {
+			//    // ISO/IEC 14496-12:2022:
+			//    // > object_count is derived from baseChannelCount
+			// }
+		}
+
 	default:
 		// there are at least 4 ways to encode udta metadata in mov/mp4 files.
 		//

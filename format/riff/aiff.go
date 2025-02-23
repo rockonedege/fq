@@ -38,7 +38,7 @@ func aiffDecode(d *decode.D) any {
 		d,
 		nil,
 		func(d *decode.D, path path) (string, int64) {
-			id := d.FieldUTF8("id", 4, chunkIDDescriptions)
+			id := d.FieldUTF8("id", 4, scalar.ActualTrimSpace, chunkIDDescriptions)
 
 			const restOfFileLen = 0xffffffff
 			size := int64(d.FieldScalarUintFn("size", func(d *decode.D) scalar.Uint {
@@ -62,7 +62,7 @@ func aiffDecode(d *decode.D) any {
 			case "COMT":
 				numComments := d.FieldU16("num_comments")
 				d.FieldArray("comments", func(d *decode.D) {
-					for i := 0; i < int(numComments); i++ {
+					for range int(numComments) {
 						d.FieldStruct("comment", func(d *decode.D) {
 							d.FieldU32("timestamp")
 							d.FieldU16("marker_id")
@@ -91,7 +91,7 @@ func aiffDecode(d *decode.D) any {
 			case "MARK":
 				numMarkers := d.FieldU16("num_markers")
 				d.FieldArray("markers", func(d *decode.D) {
-					for i := 0; i < int(numMarkers); i++ {
+					for range int(numMarkers) {
 						d.FieldStruct("marker", func(d *decode.D) {
 							d.FieldU16("id")
 							d.FieldU32("position")

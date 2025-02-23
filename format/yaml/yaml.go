@@ -3,12 +3,13 @@ package yaml
 // TODO: yaml type eval? walk eval?
 
 import (
+	"bytes"
 	"embed"
 	"errors"
 	"io"
 
 	"github.com/wader/fq/format"
-	"github.com/wader/fq/internal/gojqex"
+	"github.com/wader/fq/internal/gojqx"
 	"github.com/wader/fq/pkg/bitio"
 	"github.com/wader/fq/pkg/decode"
 	"github.com/wader/fq/pkg/interp"
@@ -30,7 +31,7 @@ func init() {
 			Functions:   []string{"_todisplay"},
 		})
 	interp.RegisterFS(yamlFS)
-	interp.RegisterFunc0("to_yaml", toYAML)
+	interp.RegisterFunc1("_to_yaml", toYAML)
 }
 
 func decodeYAML(d *decode.D) any {
@@ -46,7 +47,7 @@ func decodeYAML(d *decode.D) any {
 	}
 
 	var s scalar.Any
-	s.Actual = gojqex.Normalize(r)
+	s.Actual = gojqx.Normalize(r)
 
 	switch s.Actual.(type) {
 	case map[string]any,
@@ -61,10 +62,20 @@ func decodeYAML(d *decode.D) any {
 	return nil
 }
 
-func toYAML(_ *interp.Interp, c any) any {
-	b, err := yaml.Marshal(gojqex.Normalize(c))
-	if err != nil {
+type ToYAMLOpts struct {
+	Indent int `default:"4"` // 4 is default for gopkg.in/yaml.v3
+}
+
+func toYAML(_ *interp.Interp, c any, opts ToYAMLOpts) any {
+	b := &bytes.Buffer{}
+	e := yaml.NewEncoder(b)
+	// yaml.SetIndent panics if < 0
+	if opts.Indent >= 0 {
+		e.SetIndent(opts.Indent)
+	}
+	if err := e.Encode(gojqx.Normalize(c)); err != nil {
 		return err
 	}
-	return string(b)
+
+	return b.String()
 }

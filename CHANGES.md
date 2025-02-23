@@ -1,3 +1,850 @@
+# 0.14.0
+
+## Changes
+
+- More jq compatible `debug/0`/`debug/1` (correct prefix) and `stderr/0` (output raw strings). #1015 #1016
+- Fix crash when decoding a file while it's growing. #1050
+- Clean up some build dependencies. #1047 Thanks @Juneezee
+- gojq update. Changes from upstream: #1070
+  - Fix reduce syntax to emit results for each initial value
+  - Implement skip/2, fix limit/2 to emit error on negative count
+  - Fix last/1 to yield no values when the argument yields no values
+
+## Format changes
+
+- `av1_obu` Decode more fields and derive more values according to spec. #1020 #1021
+- `elf` Handle section header null better. #1051
+- `markdown` Update to latest gomarkdown (Fixes CVE-2024-44337). #1048
+- `matroska` Spec update. #1035
+- `midi` - Mapped SMPTE frame rates to strings and fixed bug in SMPTE offset metaevent decoding and more refactoring. #1023 Thanks @transcriptaze
+- `toml` `to_toml/1` now support indent option. #1033
+- `wav` Decode fmt chunk a bit better and improve format sym names (implied endian not bit size). #1034 #1038
+- `yaml` `to_yaml/1` now support indent option. #1033
+
+## Changelog
+
+* 2b5a52b9 Fixed format 0 filenames in Makefile debug target (cf. https://github.com/wader/fq/pull/1023#discussion_r1833958734)
+* 8f12fc0a Mapped SMPTE frame rates to strings and fixed bug in SMPTE offset metaevent decoding (cf. https://github.com/wader/fq/pull/1023#discussion_r1833943323)
+* a5f3dad8 Moved to doc.go into midi.go (cf. https://github.com/transcriptaze/fq-midi/issues/2)
+* 9f26ed8e Remove `golang.org/x/exp` dependency
+* f7d3bed3 Renamed 'xxx' constant maps to 'xxxMap' (cf. https://github.com/wader/fq/pull/1023#discussion_r1833955733)
+* 6fe91931 Replace `exp/slices` package with standard library
+* c0930b8d Reworked MIDI decoder to decode 'extra' format 0 tracks as data (cf. https://github.com/transcriptaze/fq-midi/issues/6)
+* 552cad26 Reworked MThd SMPTE field decoding to more closely follow the specification (cf. https://github.com/transcriptaze/fq-midi/issues/4)
+* e1e99003 Update docker-golang to 1.23.2 from 1.23.1
+* 120123d0 Update docker-golang to 1.23.4 from 1.23.3
+* b6a1f38c Update docker-golang to 1.23.5 from 1.23.4
+* 2450e6f6 Update docker-golang to 1.23.6 from 1.23.5
+* 45468601 Update github-go-version to 1.23.3 from 1.23.0
+* 513342f6 Update github-go-version to 1.23.4 from 1.23.3
+* 96dc2fa1 Update github-go-version to 1.23.5 from 1.23.4
+* 94d23773 Update github-go-version to 1.23.6 from 1.23.5
+* 80f6c2e2 Update github-golangci-lint to 1.62.0 from 1.60.3
+* f10639c3 Update github-golangci-lint to 1.62.2 from 1.62.0
+* 0eef2f91 Update github-golangci-lint to 1.63.0 from 1.62.2
+* 7b4b7f13 Update github-golangci-lint to 1.63.2 from 1.63.0
+* 7ea76801 Update github-golangci-lint to 1.63.3 from 1.63.2
+* e93b1956 Update github-golangci-lint to 1.63.4 from 1.63.3
+* e4dccb7e Update golang.org/x/{crypto,term,net}
+* a487bfe4 Update gomod-golang-x-crypto to 0.31.0 from 0.30.0
+* bcfb6c26 Update gomod-golang-x-crypto to 0.32.0 from 0.31.0
+* 0d7037c2 Update gomod-golang-x-net to 0.33.0 from 0.32.0
+* d1abf8a8 Update gomod-golang-x-net to 0.34.0 from 0.33.0
+* c0403fde Update gomod-golang-x-term to 0.28.0 from 0.27.0
+* bacb94cc Update gomod-golang-x-term to 0.29.0 from 0.28.0
+* 475babd4 Update gomod-golang/text to 0.21.0 from 0.20.0
+* a96628ef Update gomod-golang/text to 0.22.0 from 0.21.0
+* 6109e02a Update gomod-gopacket to 1.3.1 from 1.2.0
+* 582e769a Update make-golangci-lint to 1.62.0 from 1.61.0
+* d6ef46e9 Update make-golangci-lint to 1.62.2 from 1.62.0
+* 4da087f9 Update make-golangci-lint to 1.63.0 from 1.62.2
+* 849f9c67 Update make-golangci-lint to 1.63.2 from 1.63.0
+* e0f3fbd5 Update make-golangci-lint to 1.63.3 from 1.63.2
+* 12e583be Update make-golangci-lint to 1.63.4 from 1.63.3
+* 5395330f av1_obu: Add more derived values
+* d0c7e800 av1_obu: Decode more of sequence header
+* b9b14c64 doc: Less wide demo image to make it scale down less
+* 7c135170 elf: Handle section header null a bit better
+* f63faf48 gojq: Update fq fork
+* f8bb502e interp: Output raw strings for stderr/0
+* 77da7647 interp: debug/* should use DEBUG: not DEBUG
+* 1d251c31 matroska: Spec update
+* 00ae470d midi: adding godoc (cf. https://github.com/transcriptaze/fq-midi/issues/2)
+* 258dca21 mod: Update github.com/gomarkdown/markdown
+* a1bbd276 mod: Update golang.org/x/{crypto,sys,term,text,net}
+* 41f32a86 mod: Update gomarkdown
+* 8abd6025 progressreaderseeker: Don't index out of bounds for a growing file
+* 4a9f65dc wav: Decode fmt chunk cb_size and bytes
+* 98ded907 wav: format 1 and 3 mean LE PCM but no implied bit size
+* ed872d4b yaml,toml: Add indent option for to_{toml,yaml}
+
+# 0.13.0
+
+## Changes
+
+- New format decoders `midi`, `negentropy`, `tap` and `txz`, see below for details.
+- Add `byte_array` bits format. #992
+  ```sh
+  # by default binary values are UTF-8 strings
+  $ fq -V -n '[1,2,3] | tobytes'
+  # with -o bits_format=byte_array they are byte arrays instead
+  "\u0001\u0002\u0003"
+  $ fq -cV -n -o bits_format=byte_array '[1,2,3] | tobytes'
+  [1,2,3]
+
+  # data is a string
+  $ fq '.program_headers[] | select(.type=="interp")' /bin/ls
+  {"align":1,"data":"/lib/ld-musl-x86_64.so.1\u0000", ...}
+  # data is a byte array
+  $ fq -cV -o bits_format=byte_array '.program_headers[] | select(.type=="interp")' /bin/ls
+  {"align":1,"data":[47,108,105,98,47,108,100,45,109,117,115,108,45,120,56,54,95,54,52,46,115,111,46,49,0], ...}
+  ```
+- Go 1.22 or later is now required to build. This is to keep up with build requirements of some dependencies. #1011
+- gojq changes from upstream: #1000
+  - Implement `add/1` function
+  - Improve time functions to accept fewer element arrays
+  - Fix uri and urid formats not to convert a space between a plus sign
+
+## Format changes
+
+- `matroska` Updated to latest specification. #1010
+- `midi` MIDI decoder added by @twystd. #1004
+- `negentropy` Negentropy message decoder added by @fiatjaf. #1012
+- `tap` and `txz` TAP and TXZ tape format for ZX Spectrum computers added by @mrcook. #975
+
+## Changelog
+
+* 64b05232 Add PBS tidbit 8 episode
+* 3105b7d2 Added to probe group
+* d73c6635 Update docker-golang to 1.22.6 from 1.22.5
+* 790aa8aa Update docker-golang to 1.23.0 from 1.22.6
+* ea3294f7 Update docker-golang to 1.23.1 from 1.23.0
+* 34b2cc38 Update github-go-version to 1.22.6 from 1.22.5
+* 8bb841f0 Update github-go-version to 1.23.0 from 1.22.6
+* 2c38cf13 Update github-golangci-lint to 1.60.1 from 1.59.1
+* f9dff5c6 Update github-golangci-lint to 1.60.2 from 1.60.1
+* ccf78c75 Update github-golangci-lint to 1.60.3 from 1.60.2
+* 23df9259 Update gomod-creasty-defaults to 1.8.0 from 1.7.0
+* 9e296823 Update gomod-ergochat-readline to 0.1.3 from 0.1.2
+* 01b292d8 Update gomod-golang-x-crypto to 0.26.0 from 0.25.0
+* da6dd9e0 Update gomod-golang-x-net to 0.28.0 from 0.27.0
+* de3fa199 Update make-golangci-lint to 1.60.1 from 1.59.1
+* f6d02798 Update make-golangci-lint to 1.60.2 from 1.60.1
+* e01cff01 Update make-golangci-lint to 1.60.3 from 1.60.2
+* 42998836 Update make-golangci-lint to 1.61.0 from 1.60.3
+* ee404b2b all: re-run the test --update
+* a2417743 all: update tests for tap support
+* 2c0b5289 ci: Add CGO_ENABLED=0 to make sure we dont need it
+* 550bcc27 cli: Add go version to version string
+* a195b3fc doc: Regenerate
+* be9a9164 doc: Update formats.svg
+* db0dfb14 doc: Update formats.svg
+* 66345fec doc: regenerat formats.md for tzx/tap updates
+* f16f6dc9 fq: Update golang.org/x/exp and github.com/gomarkdown/markdown
+* 7b6d8532 go,lint: Update to go 1.22 and fix some lint warnings
+* 36267873 gojq: Update fq fork
+* 824e51ec gojq: Update fq fork
+* fc74f685 intepr: Revert binary value each
+* 3f3183a5 intepr: Support each for binary values
+* 7bf11291 interp: Add bits_format=byte_array support
+* 52e6e1b1 matroska: Update spec
+* fdde5680 midi: (partly) fixed SMPTEOffsetEvent gap
+* a1385caf midi: Decoded EndOfTrack and ProgramChange events
+* 32766412 midi: Decoded KeySignature, NoteOn and Controller events
+* 109719f2 midi: Decoded MIDIChannelPrefix, MIDIPort and SequencerSpecific metaevents
+* cbd4a8a8 midi: Decoded NoteOff event
+* 0226fc69 midi: Decoded PolyphonicPressure, ChannelPressure and PitchBend MIDI events
+* b2e71a32 midi: accomodated MIDI event running status
+* 0915f750 midi: added 'data' field to EndOfTrack event
+* 473394b2 midi: added event type to events to simplify query by event
+* 91fa5475 midi: added example queries to the test data
+* ce02d6ea midi: added length field to TimeSignature struct
+* b5f2bdab midi: added localised Makefile (cf. https://github.com/wader/fq/pull/1004#discussion_r1732745303)
+* 7950dd65 midi: added midi to the TestFormats all.fqtest list (cf. https://github.com/wader/fq/pull/1004#issuecomment-2314599567)
+* 80b93439 midi: added new test and MIDI files
+* 57adef46 midi: added sample queries to midi.md
+* 0e0a6694 midi: added tests for format 0, format 1 and format 2 MIDI files
+* e99d9f69 midi: asserted bytes left for MIDI events
+* d7ec38a2 midi: basic test set
+* a41e1230 midi: cleaned up SysExContinuation and SysExEscape logic
+* a7d0cde9 midi: cleaned up and simplied event decoding logic
+* 89954962 midi: cleaned up event decoding logic
+* 0b4be892 midi: cleaned up unknown chunk logic
+* 3809ddbd midi: combined metaevent status + event bytes
+* b433998b midi: decoded SysEx events
+* 8b236a19 midi: decoded TimeSignature meta event
+* f11dfafd midi: decoded TrackName meta event
+* 9099a3eb midi: decoded chunk tags as FieldUTF8
+* 4fe27f51 midi: decoded remaining text metaevents
+* 1bdeeb68 midi: decoded tempo metaevent
+* 59b1faa4 midi: decorated 'delta' field with running tick
+* 4fac4c68 midi: discarded unknown chunks
+* 9dfcb962 midi: experimenting with struct metaevent data
+* 2a650366 midi: fixed fuzzing errors
+* f1b888bd midi: fixed gap in SequencerSpecificEvent
+* 4bb3292f midi: fixed key signature map
+* f424936f midi: fixed lint warning (cf. https://github.com/wader/fq/pull/1004#discussion_r1734668130)
+* 2f2070ec midi: fixed lint warnings
+* 87c80f57 midi: fixes for PR comments
+* 9f057b67 midi: fixes for PR comments
+* 9c7f7f96 midi: fixes for PR comments:
+* ad0a06d6 midi: initial import
+* 2970fb14 midi: lowercased event names
+* 3ed98897 midi: mapped SMPTE framerates
+* 54a0cf12 midi: mapped SysEx event types
+* 34fca407 midi: mapped manufacturer IDs to strings
+* 0ef3304e midi: mapped note numbers to note names
+* 763d1420 midi: moved 'dev only' Makefile to workdir and removed it from .gitignore (cf. https://github.com/wader/fq/pull/1004#discussion_r1732745303)
+* 5c89d7d2 midi: moved MIDI running status and Casio flag to context struct
+* c5637f05 midi: partly fixed gaps in SysExMessage
+* 7fd9ad27 midi: removed debug leftovers (cf. https://github.com/wader/fq/pull/1004#discussion_r1732723519)
+* 462ae158 midi: removed superfluous AssertLeastBytesLeft (cf. https://github.com/wader/fq/pull/1004#discussion_r1734668130)
+* 17bac771 midi: removed superfluous uint64 cast (cf. https://github.com/wader/fq/pull/1004#discussion_r1740783338)
+* dad4a916 midi: replace d.BytesLen(1) with d.U8()
+* 578b7e78 midi: restructured event decoding to decode length and struct fields (cf. https://github.com/wader/fq/pull/1004#discussion_r1737105173)
+* befdf1fc midi: reworked SysEx events as struct with length field
+* ea3e0898 midi: reworked decoding to expect an MThd header as the first chunk (cf. https://github.com/wader/fq/pull/1004#discussion_r1732725275)
+* e940f476 midi: reworked metaevent decoding for PR comments
+* a337ff00 midi: reworked sysex and metaevent 'struct' events to decode as byte arrays
+* cee51ecd midi: reworked to include delta in event
+* a3a0a069 midi: simplifed and cleaned up MIDI 'fq' tests:
+* c8d9397b midi: snake-cased event types and event names (cf. https://github.com/wader/fq/pull/1004#discussion_r1732733049)
+* 3966d5be midi: tightened up status/event decoding logic (cf. https://github.com/wader/fq/pull/1004#issuecomment-2334916357)
+* 2350afed midi: updated help text to use snake-case event names (cf. https://github.com/wader/fq/pull/1004#discussion_r1734659627)
+* 49bd7c27 negentropy: add format.
+* e3c7b1a3 negentropy: another test from a different source, another doc entry, comments on source of test samples.
+* 38533871 negentropy: const modes, RFC3339 dates and synthetic timestamps.
+* 8f9a0057 negentropy: timestamp description as UTC.
+* 113ca632 tap: add DefaultInArg
+* e526cafa tap: add README to tests directory
+* 90de6199 tap: add a read_one_block test
+* e3c3d925 tap: add author to tap.md
+* 633160bb tap: handle unoffical block types and minor improvements
+* e5be55c1 tap: remove Probe group
+* 7816fe1c tap: remove format.TAP_In and update tzx
+* e345528d tap: rename block_type to type
+* d3849306 tap: revert using an array of bytes
+* c93dc8bb tap: verify checksum values
+* 81b23041 tzx: Add suport for ZX Spectrum TZX and TAP files
+* 6ac69e25 tzx: add README to tests directory
+* 88b6ded5 tzx: add author to tzx.md
+* b27017cc tzx: add readme instructions for bits_format=byte_array
+* fc350f3d tzx: change data fields to array of bytes for easier JSON parsing
+* d3a5b8df tzx: revert using an array of bytes
+* ffb5eb33 tzx: use jq-ish values for the mapped symbols in block type 0x18
+
+# 0.12.0
+
+REPL word navigation fix and `jpeg` DHT decoding, otherwise mostly maintenance release to update dependencies.
+
+## Changes
+
+- Update readline package to fix issue with left/right word jump in REPL. #969
+- Update of version of golang and other dependencies.
+
+## Format changes
+
+- `jpeg`
+  - Decode DHT paramaters. Thanks @matmat. #934
+  - Fix Fix EOI description. #932
+
+## Changelog
+
+* 94cfbc67 Update docker-golang to 1.22.3 from 1.22.2
+* ab09d3ce Update docker-golang to 1.22.4 from 1.22.3
+* c6dd0ed1 Update docker-golang to 1.22.5 from 1.22.4
+* 9ff7da12 Update github-go-version to 1.22.3 from 1.22.2
+* 1ff5a3fa Update github-go-version to 1.22.4 from 1.22.3
+* e33c6c61 Update github-go-version to 1.22.5 from 1.22.4
+* a5de74cd Update github-golangci-lint to 1.58.0 from 1.57.2
+* a59ba2a2 Update github-golangci-lint to 1.58.1 from 1.58.0
+* f6d72354 Update github-golangci-lint to 1.58.2 from 1.58.1
+* 44e2385a Update github-golangci-lint to 1.59.0 from 1.58.2
+* 6383626a Update github-golangci-lint to 1.59.1 from 1.59.0
+* 61f81fbf Update gomod-BurntSushi/toml to 1.4.0 from 1.3.2
+* 12f33206 Update gomod-ergochat-readline to 0.1.1 from 0.1.0
+* 6b1cc870 Update gomod-ergochat-readline to 0.1.2 from 0.1.1
+* 14ada508 Update gomod-golang-x-crypto to 0.23.0 from 0.22.0
+* f7cbf844 Update gomod-golang-x-crypto to 0.24.0 from 0.23.0
+* 384e4c23 Update gomod-golang-x-crypto to 0.25.0 from 0.24.0
+* cabb67e8 Update gomod-golang-x-net to 0.25.0 from 0.24.0
+* c55e1066 Update gomod-golang-x-net to 0.26.0 from 0.25.0
+* e625fcbf Update gomod-golang-x-net to 0.27.0 from 0.26.0
+* 586cf142 Update gomod-golang-x-term to 0.20.0 from 0.19.0
+* 7566fd93 Update gomod-golang-x-term to 0.21.0 from 0.20.0
+* 41ff984c Update gomod-golang-x-term to 0.22.0 from 0.21.0
+* 42730d75 Update gomod-golang/text to 0.15.0 from 0.14.0
+* 8bc1a20b Update gomod-golang/text to 0.16.0 from 0.15.0
+* 3a683b64 Update make-golangci-lint to 1.58.0 from 1.57.2
+* 7714fcf4 Update make-golangci-lint to 1.58.1 from 1.58.0
+* aef47df2 Update make-golangci-lint to 1.58.2 from 1.58.1
+* 0cd90ce0 Update make-golangci-lint to 1.59.0 from 1.58.2
+* 71476743 Update make-golangci-lint to 1.59.1 from 1.59.0
+* 6db6a54d build,test: Ignore some files to make ./... work
+* 175661d3 doc: Add kodsnack 585 - Polymorfisk JSON
+* ebf063d1 doc: Cleanup and improve texts a bit
+* b818923c doc: Fix function indent
+* 6f2b5994 doc: Include format description per format
+* 40f38a55 doc: Reorganize and cleanup function descriptions
+* ad2c032c goreleaser: Update action and fix deprecation warning
+* 6e13b4b5 jpeg: Add parsing of DHT parameters
+* b4825560 jpeg: Fix EOI description
+
+# 0.11.0
+
+New iNES/NES 2.0 ROM decoder (thanks @mlofjard) and basic JPEG 2000 format support. jq language improvements and fixes from gojq. And as always various decoder improvements and fixes.
+
+## Changes
+
+- Add `string_truncate` option to configure how to truncate long strings when displaying a decode value tree. `dd`, `dv` etc set truncate length to zero to not truncate. #919
+- gojq updates from upstream:
+  - Implement `ltrim`, `rtrim`, and `trim` functions
+  - Fix object construction with duplicate keys (`{x:0,y:1} | {a:.x,a:.y}`)
+  - Fix `halt` and `halt_error` functions to stop the command execution immediately
+  - Fix variable scope of binding syntax (`"a" as $v | def f: $v; "b" as $v | f`)
+  - Fix `ltrimstr` and `rtrimstr` functions to emit error on non-string input
+  - Fix `nearbyint` and `rint` functions to round ties to even
+  - Improve parser to allow `reduce`, `foreach`, `if`, `try`-`catch` syntax as object values
+  - Remove `pow10` in favor of `exp10`, define `scalbn` and `scalbln` by `ldexp`
+- Fix issue using decode value with `ltrimstr`/`rtrimstr`.
+
+## Format changes
+
+- `fit`
+  - Skip array fields on pre read messages. #878
+  - Fixed subfield referencing fields below self in message. #877
+- `jp2c` New JPEG 2000 codestream decoder. #928
+- `icc_profile` Strip whitespace in header and tag strings. #912
+- `mp4`
+  - Add `jp2c`, `jp2h`, `ihdr` `jP` JPEG 2000 related boxes support. #928
+  - Add `thmb` box support. #897
+  - Turns out for qt brand `hdlr` component name might be zero bytes. #896
+- `nes` New iNES/NES 2.0 ROM decoder (thanks @mlofjard). #893
+
+## Changelog
+
+* f7b067b6 Fixed subfield referencing fields below self in message
+* 9aa99b47 Update docker-golang to 1.22.1 from 1.22.0
+* 0afb5b59 Update docker-golang to 1.22.2 from 1.22.1
+* 2657988d Update github-go-version to 1.22.1 from 1.22.0
+* 33c93918 Update github-go-version to 1.22.2 from 1.22.1
+* a577c398 Update github-golangci-lint to 1.56.2 from 1.56.1
+* 82d96cf9 Update github-golangci-lint to 1.57.0 from 1.56.2
+* 72b4569b Update github-golangci-lint to 1.57.1 from 1.57.0
+* 14aeab0b Update github-golangci-lint to 1.57.2 from 1.57.1
+* 735256b9 Update gomod-golang-x-crypto to 0.20.0 from 0.19.0
+* 043f067f Update gomod-golang-x-crypto to 0.21.0 from 0.20.0
+* 15a7060b Update gomod-golang-x-crypto to 0.22.0 from 0.21.0
+* 85f60df2 Update gomod-golang-x-net to 0.22.0 from 0.21.0
+* 77c000e6 Update gomod-golang-x-net to 0.23.0 from 0.22.0
+* daba6b54 Update gomod-golang-x-net to 0.24.0 from 0.23.0
+* ba9ecb54 Update gomod-golang-x-term to 0.18.0 from 0.17.0
+* b2aa59f7 Update gomod-golang-x-term to 0.19.0 from 0.18.0
+* 1c24f64d Update make-golangci-lint to 1.56.2 from 1.56.1
+* 94e80864 Update make-golangci-lint to 1.57.0 from 1.56.2
+* 4f55b6af Update make-golangci-lint to 1.57.1 from 1.57.0
+* a3b63b10 Update make-golangci-lint to 1.57.2 from 1.57.1
+* 208b3e6b chore: fix function name in comment
+* 621d7f2c decode: Align some heavily used structs to save space
+* ee2ee24d decode: Cleanup io panic a bit
+* e741ca78 doc: Add ImHex to related tools
+* 36e8287c doc: Regenerate after nes and new ansisvg
+* 225fd507 fit: Skip array fields on pre read messages
+* 7500a8b7 fq: Sort formats
+* bf7fa07c fq: Use go 1.20 and cleanup
+* e2670404 gojq: Update fq fork
+* f5fd5873 gojq: Update fq fork
+* ed685116 icc_profile: Strip whitespace in header and tag strings
+* c8f9cdc9 interp: Add string_truncate option
+* 0db671f6 interp: Add todo test for eval error in path
+* ebffb3be jp2c: Add jpeg2000 codestream format
+* 79992b34 jp2c: Fail probe faster
+* 63f7d79c jp2c: Support probe
+* b542ff1d lint: More linters and some fixes
+* c6165c0c mod: go get non-bump tracked modules
+* 1784c438 mp4,avi: Trim spaces for type
+* 2ea70c42 mp4: Add thmb box support
+* 4f90a2ea mp4: Decode jP box
+* 70b1b0d6 mp4: Decode uinf box
+* 87b6c4dd mp4: Fix jp2 test
+* 8009b6f6 mp4: JPEG200 boxes jp2h and ihdr
+* ed3a126f mp4: Turns out for qt brand hdlr component name might be zero bytes
+* f3b54042 nes: Add support for iNES/NES 2.0 ROM files
+* 80bccc91 opus,vorbis: More sym snake_case
+* 08df7f45 pkg/cli/test_exp.sh: use command -v
+* 87052733 pssh_playready: Use snake_case sym values
+* aaa43dfb test: Replace pmezard/go-difflib with go's internal diff
+
+# 0.10.0
+
+Adds support for various LevelDB formats (thanks @mikez) and Garmin Flexible and Interoperable Data Transfer format (FIT) (thanks @mlofjard).
+
+And as usual some small fixes and dependency updates.
+
+## Changes
+
+- On macOS fq now reads init script from `~/.config/fq` in addition to `~/Library/Application Support/fq`. #871
+- Switch readline module from own fork to https://github.com/ergochat/readline #854
+- Updated gojq fork. Notable changes from upstream below. #844
+  - Fix pre-defined variables to be available in initial modules
+  - Fix object construction with duplicate keys
+
+## Format changes
+
+- `aac_frame` Decode instance tag and common window flag. #859
+- `fit` Add support for Garmin Flexible and Interoperable Data Transfer decoder. Thanks @mlofjard #874
+  - This format is used by various GPS tracking devices to record location, speed etc.
+  - Example of converting position information to KML:
+  ```jq
+  # to_kml.jq
+  # convert locations in a fit structure to KML
+  def to_kml:
+    ( [ .data_records[].data_message as {position_lat: $lat, position_long: $long}
+      | select($lat and $long)
+      | [$long, $lat, 0]
+      | join(",")
+      ]
+    | join(". ")
+    | { kml: {"@xmlns":"http://earth.google.com/kml/2.0"
+      , Document: {Placemark: {LineString: {coordinates: .}}}}
+      }
+    | to_xml({indent:2})
+    );
+  ```
+  Usage:
+  ```sh
+  # -L to add current directory to library path
+  # -r for raw string output
+  # 'include "to_ml";' to include to_kml.jq
+  # to_kml calls to_kml function
+  $ fq -L . -r 'include "to_kml"; to_kml' file.fit > file.kml
+  ```
+
+- `hevc_sps` Fix some incorrect profile_tier_level decoding. #829
+- `html` Fix issue parsing elements including SOLIDUS "/". #870
+  - Upstream issue https://github.com/golang/go/issues/63402
+- `mpeg_es` Support ES_ID_Inc and decode descriptors for IOD tags
+- `leveldb_descriptor`, `leveldb_log`, `leveldb_table` Add support for LevelDB. Thanks @mikez #824
+  - This format is used by many database backends and applications like Google chrome.
+- `pcapng` Decode all section headers instead of just the first. #860
+- `png` Fix incorrect decoding of type flags. #847
+- `hevc_sps` Fix incorrect decoding of profile_tier_level. #829
+- `tls` Fix field name typos. #839
+- `mp4`
+  - Don't try decode samples for a track that has an external reference. #834
+  - Use box structure instead of track id to keep track for sample table data. #833
+  - `ctts` box v0 sample offset seems to be signed in practice but not in spec. #832
+- `webp` Decode width, height and flags for lossless WebP. #857
+
+## Changelog
+
+* 6c3914aa Add DFDL acronym to README.md
+* 43c76937 Update docker-golang to 1.21.5 from 1.21.4
+* 836af78a Update docker-golang to 1.21.6 from 1.21.5
+* f9e1e759 Update docker-golang to 1.22.0 from 1.21.6
+* 54da5efc Update ergochat-readline to 81f0f2329ad3 from cca60bf24c9f
+* bed912c3 Update github-go-version to 1.21.5 from 1.21.4
+* 3f48e3be Update github-go-version to 1.21.6 from 1.21.5
+* 5bfb2bb1 Update github-go-version to 1.22.0 from 1.21.6
+* 888b0be0 Update github-golangci-lint to 1.56.0 from 1.55.2
+* 283380ba Update github-golangci-lint to 1.56.1 from 1.56.0
+* be79c193 Update gomod-golang-x-crypto to 0.16.0 from 0.15.0
+* 6aba928f Update gomod-golang-x-crypto to 0.17.0 from 0.16.0
+* 561fed97 Update gomod-golang-x-crypto to 0.18.0 from 0.17.0
+* b5388eaa Update gomod-golang-x-crypto to 0.19.0 from 0.18.0
+* 0200a4ee Update gomod-golang-x-net to 0.19.0 from 0.18.0
+* 2e22e1b8 Update gomod-golang-x-net to 0.20.0 from 0.19.0
+* 40bcb194 Update gomod-golang-x-net to 0.21.0 from 0.20.0
+* 2a1d9707 Update gomod-golang-x-term to 0.16.0 from 0.15.0
+* 310c78ea Update gomod-golang-x-term to 0.17.0 from 0.16.0
+* 536583cf Update make-golangci-lint to 1.56.0 from 1.55.2
+* 5369576d Update make-golangci-lint to 1.56.1 from 1.56.0
+* e51c746d aac_frame: CPE: Decode instance tag and common window flag
+* f5f8e93c bson: Fix jq style a bit
+* d0a1b301 bump readline to 0.1.0-rc1
+* b56258cf bump,readline: Add bump config and update to latest master
+* 0070e389 bump,readline: Skip bump until not rc
+* 63e0aa3c doc: Fix weird wording in README.md
+* e5fd1eb4 doc: Generate svgs with new ansisvg
+* 55470deb doc: Update docs to include fit format
+* c47756dc doc: Update svgs after ansisvg update
+* 54c6f0cd fit: Added support for "invalid" value checking.
+* 46dbf5b7 fit: Added support for ANT+ FIT format (used by Garmin devices)
+* 6219d57c fit: Added support for dynamic subfields
+* 33e5851d fit: Fix field casing to snake_case. Misc cleanup.
+* 76307e4d fit: Formatted date/time description for timestamp fields
+* 88622804 fit: Made long/lat present as float64
+* 788088f8 fit: Show crc as hex, lower case "invalid" and some style harmonization
+* a07ce117 fq: Relicense float80 code to MIT
+* 5829c6b4 gojq: Update fq fork
+* d155c80c gojq: Update fq fork
+* a793d109 goreleaser: Fix deprecated options
+* 919e0795 hevc_sps: Fix some incorrect profile_tier_level decoding
+* 69ae7659 interp: Fix crash when using line_bytes=0
+* 21766000 interp: Support ~/.config/fq as fallback on macOS
+* fb910bd4 ldb: first draft
+* efc59a81 ldb: uncompression support
+* 41f27a13 leveldb: add `torepr` for descriptor
+* 2df0f0fb leveldb: add log and descriptor decoders
+* b05aa997 leveldb: address PR comments
+* 2f5f1831 leveldb: decode unfragmented .log files further; fix UTF8 decoding
+* e826f097 leveldb: fix Errorf arguments
+* 42830911 leveldb: fix all.fqtest failures
+* 287ed366 leveldb: fix metaindex keys, refactoring, and jq syntax per PR
+* 8665df56 leveldb: fix table's data blocks' internal keys decoding
+* 08e3d2d2 leveldb: improve `stringify` by preallocating result
+* 3a396e15 leveldb: improve log documentation
+* 1ba8dec5 leveldb: in some properties, change spaces to underscores
+* e735cead leveldb: propagate error
+* 07ad9401 leveldb: rename "suffix" to "sequence_number_suffix"
+* 78a3e94b leveldb: rename functions and add comments
+* cc0d5a8b leveldb: update docs
+* fe1099b9 leveldb: updates per PR comments
+* 0d06e0a4 mp4: Don't decode samples if track has external data reference
+* d2c5ce55 mp4: Use box structure instead of track id to keep track for sample table data
+* aadf26f6 mp4: ctts v0 sample_offset seems to be signed in practice
+* fca55b2c mpeg_es: Support ES_ID_Inc and decode descriptors for IOD tags
+* e3af4670 pcapng: Decode all section headers, clenaup descriptions
+* 38b4412a png: Type flags were off-by-one bit
+* fb1c625a readline,bump: Fix version compare link
+* 41226f48 readline: Switch to ergochat/readline
+* cd572d3a readline: Update to 0.1.0 and add bump config
+* 7906f33d test: Support to more common -update flag
+* 3b7cc1f4 tls: Fix field name typos
+* b0421dfc webp: Decode width, height and flags for lossless webp
+
+# 0.9.0
+
+## Changes
+
+- Make synthetic values not look like decode values with a zero range. #777
+- Bit ranges are now displayed using exclusive end notation to be more consistent. For example if a field at byte offset 5 is 8 bit in size using the `<byte>[.<bits>]` notation it is now shown as `5-6`, before it was shown as `5-5.7`. See usage documentation for more examples. #789
+- Improve colors when using a light background. Thanks @adedomin for reporting. #781
+- Better `from_jq` error handling. Thanks @emanuele6 for reporting. #788
+- Updated gojq fork. Notable changes from upstream below. #808
+  - Adds `pick/1` function. Outputs value and nested values for given input expression.
+    ```sh
+    # pick out all string values from a ELF header
+    $ fq '.header | pick(.. | select(type == "string"))' /bin/ls
+    {
+      "ident": {
+        "data": "little_endian",
+        "magic": "\u007fELF",
+        "os_abi": "sysv",
+        "pad": "\u0000\u0000\u0000\u0000\u0000\u0000\u0000"
+      },
+      "machine": "x86_64",
+      "type": "dyn"
+    }
+    # bonus tip:
+    # if you only need to pick one level then jq has a shortcut syntax
+    $ fq '.header | {type, machine}' /bin/ls
+    {
+      "machine": "x86_64",
+      "type": "dyn"
+    }
+    ```
+  - Implements comment continuation with backslash.
+- Updated gopacket to 1.2.1. Notable changes from upstream below. #815
+  - fix(ip4defrag): allow final fragment to be less than 8 octets by @niklaskb
+  - refactor: don't fill empty metadata slots by @smira
+  - refactor: optimize port map to switch statement by @smira
+
+## Decoder changes
+
+- `avi`
+  - Some general clean up fixes. Thanks to Marion Jaks at mediathek.at for testing and motivation.
+  - Add extended chunks support and `decode_extended_chunks` option. This is trailing chunks used by big AVI files. #786
+  - Add type, handler, compression (video) and format_tag (audio) per stream. #775
+    ```sh
+    $ fq '.streams[0]' file.avi
+          │00 01 02 03 04 05 06 07│01234567│.streams[0]{}: stream
+    0x1680│      00 00 00 01 67 f4│  ....g.│  samples[0:3]:
+    0x1688│00 0d 91 9b 28 28 3f 60│....((?`│
+    0x1690│22 00 00 03 00 02 00 00│".......│
+    *     │until 0x2409.7 (3464)  │        │
+          │                       │        │  type: "vids"
+          │                       │        │  handler: "H264"
+          │                       │        │  compression: "H264"
+    ```
+  - Properly use sample size field when decoding samples. #776
+- `exif` (and `tiff`)
+  - Handle broken last next ifd offset by treating it as end marker. #804
+- `gzip`
+  - Correctly handle multiple members. Thanks @TomiBelan for the bug report and assistance. #795
+  - Now gzip is modelled as a struct with a `members` array and a `uncompressed` field that is the concatenation of the uncompressed members.
+- `macho`
+  - Properly respect endian when decoding some flag fields. #796
+  - Move formatted timestamp to description so that numeric value is easier to access. #797
+- `matroska`
+  - Support decoding EBML date type. #787
+- `protobuf`
+  - No need to use synthetic fields for string and bytes. #800
+- `webp`
+  - Refactor to use common RIFF decoder and also decode VP8X, EXIF, ICCP and XMP chunks. #803
+- `zip` Better timestamp support and fixes
+  - Fix incorrect MSDOS time/date decoding and add extended timestamp support. Also remodel time/date to be a struct with raw values, components and a synthetics UTC unixtime guess. Thanks @TomiBelan for the bug report and assistance. #793
+  ```sh
+  $ fq '.local_files[] | select(.file_name == "a").last_modification' file.zip
+      │00 01 02 03 04 05 06 07│01234567│.local_files[3].last_modification{}:
+  0xd0│            81 01      │    ..  │  fat_time: 0x181
+      │                       │        │  second: 2 (1)
+      │                       │        │  minute: 12
+      │                       │        │  hour: 0
+  0xd0│                  73 53│      sS│  fat_date: 0x5373
+      │                       │        │  day: 19
+      │                       │        │  month: 11
+      │                       │        │  year: 2021 (41)
+      │                       │        │  unix_guess: 1637280722 (2021-11-19T00:12:02)
+  ```
+
+## Changelog
+
+* b7022183 Update docker-golang to 1.21.2 from 1.21.1
+* d7047116 Update docker-golang to 1.21.3 from 1.21.2
+* c31fc874 Update docker-golang to 1.21.4 from 1.21.3
+* 861487d4 Update github-go-version to 1.21.2 from 1.21.1
+* d7663569 Update github-go-version to 1.21.3 from 1.21.2
+* caef93ce Update github-go-version to 1.21.4 from 1.21.3
+* de7fdae5 Update github-golangci-lint to 1.55.0 from 1.54.2
+* 60edf973 Update github-golangci-lint to 1.55.1 from 1.55.0
+* 534a2c8c Update github-golangci-lint to 1.55.2 from 1.55.1
+* 906bc3bb Update gomod-golang-x-crypto to 0.14.0 from 0.13.0
+* 8d4d18d3 Update gomod-golang-x-crypto to 0.15.0 from 0.14.0
+* f108194d Update gomod-golang-x-net to 0.16.0 from 0.15.0
+* 5381f381 Update gomod-golang-x-net to 0.17.0 from 0.16.0
+* 14fe728c Update gomod-golang-x-net to 0.18.0 from 0.17.0
+* 1011f19c Update gomod-golang/text to 0.14.0 from 0.13.0
+* 527aad6c Update gomod-gopacket to 1.2.0 from 1.1.1
+* 0c22c79b Update make-golangci-lint to 1.55.0 from 1.54.2
+* 5f06364f Update make-golangci-lint to 1.55.1 from 1.55.0
+* 36576a5c Update make-golangci-lint to 1.55.2 from 1.55.1
+* d703321a avi: Add extended chunks support and option
+* 55521bba avi: Add stream type constants
+* 51965549 avi: Add type, handler, format_tag and compreession per stream
+* 0f225c32 avi: Add unused field for extra indx chunk space
+* df085b91 avi: Handle stream sample size
+* c7ec18d6 avi: Increase sample size heuristics to 32bit stereo
+* a745b12d avi: More correct strf chunk extra data
+* 9b10e598 avi: Only use sample size heuristics if there is no format
+* 23ae4d97 decode,interp: Make synthetic values more visible and not act as decode values
+* 5abf151f doc: Remove spurious backtick
+* 02b35276 exif,tiff: Handle broken last next ifd offset by treating it as end marker
+* dc376f34 gojq: Update rebased fq fork
+* ac276ee1 gzip: Correctly handle multiple members
+* 45a8dd9c interp: Better from_jq error handling
+* 051a70bd interp: Change bit ranges to use exclusive end
+* 29e75411 interp: Fix infinite recursion when casting synthetic raw value into a jq value
+* c28163f8 interp: Improve colors when using light background
+* 797c7d90 macho: Move timestamp string to description
+* 71a5fc91 macho: Respect endian when decoding flags
+* 1d14ea51 matroska: Decode ebml date type
+* b24ed161 mod: Update golang.org/x/exp and github.com/gomarkdown/markdown
+* 5e2e49e3 protobuf: No need for synthetic for string and bytes value
+* 6034c705 webp,avi,wav,aiff: Trim RIFF id string
+* 9e58067f webp: Refactor to use riff code and decode VP8X, EXIF, ICCP and XMP chunks
+* a83cac60 zip: Fix incorrect time/date, add extended timestamp and refactor
+
+# 0.8.0
+
+Fix handling of shadowing order for `_<name>` keys, 3 new decoders `caff`, `moc3` and `opentimestamps`, some smaller fixes and improvements.
+
+In other jq news [jq 1.7](https://github.com/jqlang/jq/releases/tag/jq-1.7) was finally released 5 years since the last release! also happy to now be part of the jq maintainance team.
+
+## Changes
+
+- New decoders `caff` and `moc3`. See below for details.
+- Fix shadowing of underscore prefixed keys (`_<name>`) for text formats like `json`, `yaml` etc. #757
+  This happenned because fq has a bunch of internal underscore prefixed "extra" keys that is used for various things and these had priority even when there already existed a "value" key with same name.
+  ```sh
+  $ fq -n '`{"_format": 123}` | fromjson | ._format'
+  ```
+  Now `123`, before `"json"`.
+  ```sh
+  $ fq -n '`{}` | fromjson | ._missing'
+  ```
+  Now `null`, before error
+- Rename `--null`/`nul-output` to `--raw-output0` and also clarify that NUL and new lines are outputted after and not between each output.
+  This is to be in sync with jq (https://github.com/jqlang/jq/pull/2684). #736
+- Updated gojq fork with fixes from upstream:
+  - Improved error messages for indices, setpath, delpaths
+  - Add `abs` function
+  - Change behavior of walk with multiple outputs
+  - Change zero division to produce an error when dividend is zero
+  - Fix empty string repeating with the maximum integer
+  - Fix string multiplication by zero to emit empty string
+  - Remove deprecated `leaf_paths` function
+- Fix `split` in combination with binary to not include separator. #767
+
+## Decoder changes
+- `caff` Add archive format decoder. Thanks @Ronsor #747
+  - CAFF is an archive format usually found with the extensions `.cmo3` and `.can3` used by Live2D Cubism.
+- `id3v2` Handle `W000`-`WZZZ` and `W00`-`WZZ` URL frames. #758
+- `matroska` Update spec and regenerate. #737
+- `moc3` Add Live2D Cubism MOC3 decoder. Thanks @Ronsor #747
+  - MOC3 is a format for 2D rigged puppets, somewhat like Flash.
+- `mp3_frame_xing` Detect lame ext more similar to ffmpeg and mediainfo. #763
+- `mp4`
+  - Decode `sgpd` (Sample group definition box) entries. Thanks Sergei Kuzmin @ksa-real #707
+  - Decode `cslg` (Composition to decode timeline mapping) box. #754
+  - Decode `emsg` (Event message) and `id3v2` message data. #755
+  - Nicer trimmed major brand for `ftyp`. #723
+- `opentimestamps` Add [OpenTimestamps](https://opentimestamps.org/) decoder. Thanks @fiatjaf #769
+
+## Changelog
+
+* 40310826 Update docker-golang to 1.20.6 from 1.20.5
+* 6daa0aa7 Update docker-golang to 1.20.7 from 1.20.6
+* 8bd7b6d6 Update docker-golang to 1.21.0 from 1.20.7
+* bff668c3 Update docker-golang to 1.21.1 from 1.21.0
+* 8e705aa7 Update github-go-version to 1.20.6 from 1.20.5
+* 3828b423 Update github-go-version to 1.20.7 from 1.20.6
+* c09d50a2 Update github-go-version to 1.21.0 from 1.20.7
+* 30b27a5b Update github-go-version to 1.21.1 from 1.21.0
+* 104c3bdb Update github-golangci-lint to 1.54.0 from 1.53.3
+* 7906a463 Update github-golangci-lint to 1.54.1 from 1.54.0
+* 31de3f97 Update github-golangci-lint to 1.54.2 from 1.54.1
+* 83947293 Update gomod-golang-x-crypto to 0.12.0 from 0.11.0
+* ebb71e24 Update gomod-golang-x-crypto to 0.13.0 from 0.12.0
+* c8aae666 Update gomod-golang-x-net to 0.13.0 from 0.12.0
+* a46ee659 Update gomod-golang-x-net to 0.14.0 from 0.13.0
+* 07069a51 Update gomod-golang-x-net to 0.15.0 from 0.14.0
+* 79432e71 Update gomod-golang/text to 0.12.0 from 0.11.0
+* 2f8ebf11 Update gomod-golang/text to 0.13.0 from 0.12.0
+* 1fa14a03 Update make-golangci-lint to 1.54.0 from 1.53.3
+* fc4101dc Update make-golangci-lint to 1.54.1 from 1.54.0
+* 4e20e04f Update make-golangci-lint to 1.54.2 from 1.54.1
+* 013cc2f6 caff: eliminate gaps and specify unused fields
+* 6a3fecd2 caff: include uncompressed bits for proper decompressed entries that can't be decoded as a format
+* da41a8d3 caff: initial implementation
+* 23e660f4 caff: minor formatting changes
+* fa115722 caff: obfuscation key is a signed integer, add test data
+* 29084e35 caff: remove dead code
+* 4dd0f6d8 caff: run go fmt
+* b3759de7 caff: run go fmt
+* cc58c4b8 caff: update doc/formats.md
+* d5345f0b cli: Rename --null/nul-output to --raw-output0
+* c0352f2f decode,interp: Don't shadow _key and error on missing _key
+* 44f00602 dev,jq: Reformat jq code to look more the same
+* 9cd1d0f3 dev: Move examples and snippets to wiki
+* f15f9bc1 doc,moc3,caff: Add author and regenerate docs
+* 406f3926 doc: Move up and update differences jq section a bit
+* 8edef78a docker: Change to bookworm
+* 56fec2aa elf: Fix broken static and segfault tests
+* fa3dba10 gojq: Update fq fork
+* 0cefc46b golangci: Fix gosec aliasing warnings
+* 0d014764 gomod: Update x/exp and gomarkdown
+* c503bc13 html: Add forgotten re test
+* 0efe5a2c id3v2: Handle W000-WZZZ,W00-WZZ URL frames
+* a614c9df interp: split: Correctly split binary
+* 3af0462c luajit: file null terminator: raw bits, validate
+* c07673a0 matroska: Update spec and regenerate
+* 441fcd09 moc3, caff: update tests and README
+* f7eb0279 moc3: Fix field order in blend_shape_keyform_bindings structure, version detection in count_info
+* 03ba71b6 moc3: add support for version 5
+* d3073c64 moc3: add test data for new version 5
+* ce40fd19 moc3: consistency - scales array contains value elements, not scale elements
+* fac1e683 moc3: count_info: extra space is reserved, not normal alignment/padding
+* e424e293 moc3: eliminate gaps and properly handle padding, fix version 5 format decoding
+* 092662ec moc3: initial implementation
+* 3caf34e3 moc3: nicer tree structure, use more meaningful names for array elements
+* 20f02e79 moc3: remove dead code
+* 6d10a25b moc3: update certain array element names, explicitly mark unused or reserved space
+* 833b0636 moc3: update test data
+* 14f233d2 moc3: update tests
+* c4e86448 mod: Update golang.org/x/exp and github.com/gomarkdown/markdown
+* 0699c80b mp3_frame_xing: Detect lame ext more similar to ffmpeg and mediainfo
+* e50028ac mp4,mpeg_es: Decode iods box and MP4_IOD_Tag OD
+* 312d8078 mp4: Decode cslg box
+* bedd719b mp4: Decode emsg box
+* 97194ad8 mp4: Nicer major brand and handle some qt brand short strings better
+* cc8e6f1a opentimestamps: abstract away file digest sizes and support sha1, ripemd160 and keccac256.
+* 64a4ff2e opentimestamps: account for unknown attestation types.
+* 912f4116 opentimestamps: add help text.
+* cef5faa8 opentimestamps: add parser.
+* 1aa557d5 opentimestamps: add tests.
+* 5e7c01a0 opentimestamps: address comments and improve things.
+* 976a7564 opentimestamps: one last make doc.
+* 0a22a325 opentimestamps: satisfy linter.
+* 456a6a4f protobuf_widevine: Make protection_scheme constants less magic
+
+# 0.7.0
+
+Added LuaJIT bytecode decoder by @dlatchx, otherwise mostly small things. Been busy with nice weather and
+helping our getting jq development and maintenance back on track.
+
+## Changes
+
+- Better performance of binary arrays when they only include 0-255 numbers or strings. #704
+- Make `tovalue` on binary, in addition decode value binary, respect `bits_format` options. #677
+  ```sh
+  # uses -V to do tovalue to get a hex string
+  # uses -r to output "raw" string
+  $ fq -o bits_format=hex -Vr -n '[1,0xff,3] | tobytes'
+  01ff03
+  ```
+- Updated gojq fork with fixes from upstream: #679
+  - Improved error messages
+  - `@urid` URI format function
+
+## Decoder changes
+
+- `luajit` Add LuaJIT bytecode decoder. Thanks @dlatchx #709
+- `mp4` Improved sample group definition box `sgpd` entries decoder. Thanks @ksa-real #707
+- `mp4` Improved user metadata `udta` structure decoding #676
+- `wav` Decode `bext` chunk. #712
+
+## Changelog
+
+* 47b90603 Improved README.md
+* d02b70f7 Update README.md
+* 64e17f0e Update docker-golang to 1.20.5 from 1.20.4
+* 6faed675 Update github-go-version to 1.20.5 from 1.20.4
+* b9fce9bd Update github-golangci-lint to 1.53.1 from 1.52.2
+* ff4048c4 Update github-golangci-lint to 1.53.2 from 1.53.1
+* 76e0e17c Update github-golangci-lint to 1.53.3 from 1.53.2
+* 8e75dc9b Update gomod-BurntSushi/toml to 1.3.2 from 1.2.1
+* 6dc0746a Update gomod-golang-x-crypto to 0.10.0 from 0.9.0
+* 98351ff1 Update gomod-golang-x-crypto to 0.11.0 from 0.10.0
+* 939d98c2 Update gomod-golang-x-net to 0.11.0 from 0.10.0
+* 660ca032 Update gomod-golang-x-net to 0.12.0 from 0.11.0
+* 36ef2a20 Update gomod-golang/text to 0.10.0 from 0.9.0
+* 0eb6557d Update gomod-golang/text to 0.11.0 from 0.10.0
+* a079b73a Update gomod-gopacket to 1.1.1 from 1.1.0
+* c3e104bc Update make-golangci-lint to 1.53.1 from 1.52.2
+* 7c1da0ef Update make-golangci-lint to 1.53.2 from 1.53.1
+* 47ea6cf7 Update make-golangci-lint to 1.53.3 from 1.53.2
+* fd2cb6f8 doc: Fix broken link in README
+* db2e6214 go fmt
+* 38cb8292 gojq: Update rebased fq fork
+* 41f40b7f interp: Add to binary fast path for arrays with only 0-255 numbers and strings
+* b2c0e5fc interp: Make binary also respect bits_format
+* b24063be luajit: *.fqtest: add comments for generating .luac from source
+* bdf158be luajit: add luajit.md
+* 93c96965 luajit: add to probe group
+* 32300a3f luajit: check binary.Read() error
+* a83576a8 luajit: clarify description
+* 751ee5a3 luajit: explain LuaJITDecodeKNum, fix negative in bug
+* 3561c08a luajit: fallbackUintMapSymStr
+* 5d9a08c6 luajit: fix regression: (u64 vs i64)
+* 64c11bed luajit: improve debuginfo decoding
+* 1afdf8b1 luajit: initial support
+* 29ab66b3 luajit: lowercase flags
+* e44f5c00 luajit: magic number: raw bits, check with assert
+* 23b9eeab luajit: make doc
+* 715f850d luajit: opcodes: implement scalar.UintMapper
+* c3a123ad luajit: remove unecessary dependency
+* 64c92da6 luajit: remove unused variable
+* 52ce8181 luajit: split in smaller decode functions
+* 441d246d luajit: standardize field names (key/value/type ect.)
+* eb819dd4 luajit: tests: improve coverage
+* dd594f47 luajit: tests: rename lua source file
+* c42fb9e7 luajit: typo
+* 08ae661c luajit: use UTF8 strings
+* 1da80691 mp4: udta: Improve length/lang box probe and support empty value
+* e869d8af sgpd box entries parsing
+* 8c75509e wav: Decode bext chunk
+
 # 0.6.0
 
 Adds decoders for PostgreSQL btree, control and heap files. Thanks Pavel Safonov @pnsafonov and Michael Zhilin @mizhka

@@ -6,11 +6,12 @@ import (
 	"embed"
 	"fmt"
 	"io"
+	"strings"
 	"unicode/utf8"
 
 	"github.com/BurntSushi/toml"
 	"github.com/wader/fq/format"
-	"github.com/wader/fq/internal/gojqex"
+	"github.com/wader/fq/internal/gojqx"
 	"github.com/wader/fq/pkg/bitio"
 	"github.com/wader/fq/pkg/decode"
 	"github.com/wader/fq/pkg/interp"
@@ -31,7 +32,7 @@ func init() {
 			Functions:   []string{"_todisplay"},
 		})
 	interp.RegisterFS(tomlFS)
-	interp.RegisterFunc0("to_toml", toTOML)
+	interp.RegisterFunc1("_to_toml", toTOML)
 }
 
 func decodeTOMLSeekFirstValidRune(br io.ReadSeeker) error {
@@ -69,7 +70,7 @@ func decodeTOML(d *decode.D) any {
 		d.Fatalf("%s", err)
 	}
 	var s scalar.Any
-	s.Actual = gojqex.Normalize(r)
+	s.Actual = gojqx.Normalize(r)
 
 	// TODO: better way to handle that an empty file is valid toml and parsed as an object
 	switch v := s.Actual.(type) {
@@ -88,13 +89,19 @@ func decodeTOML(d *decode.D) any {
 	return nil
 }
 
-func toTOML(_ *interp.Interp, c any) any {
+type ToTOMLOpts struct {
+	Indent int `default:"2"` // 2 is default for BurntSushi/toml
+}
+
+func toTOML(_ *interp.Interp, c any, opts ToTOMLOpts) any {
 	if c == nil {
-		return gojqex.FuncTypeError{Name: "to_toml", V: c}
+		return gojqx.FuncTypeError{Name: "to_toml", V: c}
 	}
 
 	b := &bytes.Buffer{}
-	if err := toml.NewEncoder(b).Encode(gojqex.Normalize(c)); err != nil {
+	e := toml.NewEncoder(b)
+	e.Indent = strings.Repeat(" ", opts.Indent)
+	if err := e.Encode(gojqx.Normalize(c)); err != nil {
 		return err
 	}
 	return b.String()

@@ -2,25 +2,23 @@
 
 Tool, language and decoders for working with binary data.
 
+TLDR: it aims to be jq, hexdump, dd and gdb for files combined into one.
+
 ![fq demo](doc/demo.svg)
 
-Basic usage is `fq . file` or `fq d file`.
+Basic usage is `fq . file`, `fq d file` or `fq 'some query' file ...`.
 
 For details see [usage.md](doc/usage.md).
 
 ### Background
 
-fq is inspired by the well known jq tool and language that allows you to work with binary formats the same way you would using jq. In addition it can present data like a hex viewer, transform, slice and concatenate binary data. It also supports nested formats and has an interactive REPL with auto-completion.
+fq is inspired by the [jq](https://jqlang.github.io/jq/) tool and language and allows you to work with binary formats in the same way. In addition to using jq expressions it can also present decoded tree structures, transform, slice and concatenate binary data. It also supports nested formats and features an interactive REPL with auto-completion of functions and names.
 
-It was originally designed to query, inspect and debug media codecs and containers like mp4, flac, mp3, jpeg. But since then it has been extended to support a variety of formats like executables, packet captures (with TCP reassembly) and serialization formats like JSON, YAML, XML, ASN1 BER, Avro, CBOR, protobuf. In addition it also has functions to work with URLs, convert to/from hex, number bases, search for things etc.
-
-In summary it aims to be jq, hexdump, dd and gdb for files combined into one.
-
-**NOTE :** fq is still early in development so things might change, be broken or do not make sense. That also means that there is a great opportunity to help out!
+It was originally designed to query, inspect and debug media codecs and containers like MP4, FLAC and JPEG but has since been extended to support a variety of formats like executables, packet captures (with TCP reassembly) and serialization formats like JSON, YAML, XML, CBOR, protobuf. In addition it also has functions to work with URLs, convert to/from hex, number bases, search for patterns etc.
 
 ### Goals
 
-- Make binaries accessible, queryable and sliceable.
+- Make binaries more accessible, queryable and sliceable.
 - Nested formats and bit-oriented decoding.
 - Quick and comfortable CLI tool.
 - Bits and bytes transformations.
@@ -66,6 +64,7 @@ bsd_loopback_frame,
 [bson](doc/formats.md#bson),
 [bytes](doc/formats.md#bytes),
 bzip2,
+[caff](doc/formats.md#caff),
 [cbor](doc/formats.md#cbor),
 [csv](doc/formats.md#csv),
 dns,
@@ -74,6 +73,7 @@ elf,
 ether8023_frame,
 exif,
 fairplay_spc,
+[fit](doc/formats.md#fit),
 flac,
 [flac_frame](doc/formats.md#flac_frame),
 flac_metadatablock,
@@ -98,13 +98,20 @@ id3v11,
 id3v2,
 ipv4_packet,
 ipv6_packet,
+jp2c,
 jpeg,
 json,
 jsonl,
+[leveldb_descriptor](doc/formats.md#leveldb_descriptor),
+[leveldb_log](doc/formats.md#leveldb_log),
+[leveldb_table](doc/formats.md#leveldb_table),
+[luajit](doc/formats.md#luajit),
 [macho](doc/formats.md#macho),
 macho_fat,
 [markdown](doc/formats.md#markdown),
 [matroska](doc/formats.md#matroska),
+[midi](doc/formats.md#midi),
+[moc3](doc/formats.md#moc3),
 [mp3](doc/formats.md#mp3),
 mp3_frame,
 mp3_frame_vbri,
@@ -117,8 +124,11 @@ mpeg_pes_packet,
 mpeg_spu,
 mpeg_ts,
 [msgpack](doc/formats.md#msgpack),
+[negentropy](doc/formats.md#negentropy),
+[nes](doc/formats.md#nes),
 ogg,
 ogg_page,
+[opentimestamps](doc/formats.md#opentimestamps),
 opus_packet,
 [pcap](doc/formats.md#pcap),
 pcapng,
@@ -133,12 +143,14 @@ pssh_playready,
 [rtmp](doc/formats.md#rtmp),
 sll2_packet,
 sll_packet,
+[tap](doc/formats.md#tap),
 tar,
 tcp_segment,
 tiff,
 [tls](doc/formats.md#tls),
 toml,
 [tzif](doc/formats.md#tzif),
+[tzx](doc/formats.md#tzx),
 udp_datagram,
 vorbis_comment,
 vorbis_packet,
@@ -159,8 +171,10 @@ It can also work with some common text formats like URLs, hex, base64, PEM etc a
 
 For details see [formats.md](doc/formats.md) and [usage.md](doc/usage.md).
 
-## Presentations
+## Presentations and media
 
+- [PBS Tidbit 8 of Y: Interview with jq Maintainer Mattias Wadman](https://pbs.bartificer.net/tidbit8) - English podcast episode about jq and some fq.
+- [Kodsnack 585 - Polymorfisk JSON](https://kodsnack.se/585/) - Swedish podcast episode about jq and fq
 - "fq - jq for binary formats" at [FOSDEM 2023](https://fosdem.org/2023/) - [video & slides](https://fosdem.org/2023/schedule/event/bintools_fq/)
 - "fq - jq for binary formats" at [No time to wait 6](https://mediaarea.net/NoTimeToWait6) - [video](https://www.youtube.com/watch?v=-Pwt5KL-xRs&t=1450s) - [slides](doc/presentations/nttw6/fq-nttw6-slides.pdf)
 - "fq - jq for binary formats" at [Binary Tools Summit 2022](https://binary-tools.net/summit.html) - [video](https://www.youtube.com/watch?v=GJOq_b0eb-s&list=PLTj8twuHdQz-JcX7k6eOwyVPDB8CyfZc8&index=1) - [slides](doc/presentations/bts2022/fq-bts2022-v1.pdf)
@@ -231,9 +245,9 @@ apk add -X http://dl-cdn.alpinelinux.org/alpine/edge/testing fq
 
 ### Build from source
 
-Make sure you have version of [go](https://go.dev) 1.18 or later installed.
+Make sure you have [go](https://go.dev) 1.22 or later installed.
 
-To install directly from git repository (no clone needed) :
+To install directly from git repository (no git clone needed):
 ```sh
 # build and install latest release
 go install github.com/wader/fq@latest
@@ -257,10 +271,6 @@ go build -o fq .
 make test fq
 ```
 
-## TODO and ideas
-
-See [TODO.md](doc/TODO.md)
-
 ## Development and adding a new decoder
 
 See [dev.md](doc/dev.md)
@@ -277,6 +287,7 @@ for inventing the [jq](https://github.com/stedolan/jq) language.
 #### Tools
 
 - [HexFiend](https://github.com/HexFiend/HexFiend) - Hex editor for macOS with format template support.
+- [ImHex](https://github.com/WerWolv/ImHex) - A Hex Editor for Reverse Engineers.
 - [binspector](https://github.com/binspector/binspector) - Binary format analysis tool with query language and REPL.
 - [kaitai](https://kaitai.io) - Declarative binary format parsing.
 - [Wireshark](https://www.wireshark.org) - Decodes network traffic (tip: `tshark -T json`).
@@ -293,7 +304,11 @@ for inventing the [jq](https://github.com/stedolan/jq) language.
 - [Let's Solve the File Format Problem](http://fileformats.archiveteam.org).
 - [PRONOM](https://www.nationalarchives.gov.uk/PRONOM/) file format registry.
 - [Sustainability of Digital Formats](https://www.loc.gov/preservation/digital/formats/) at Library of Congress.
-- [Data Format Description Language](https://en.wikipedia.org/wiki/Data_Format_Description_Language).
+- [Data Format Description Language (DFDL)](https://en.wikipedia.org/wiki/Data_Format_Description_Language).
+
+## TODO and ideas
+
+See [TODO.md](doc/TODO.md)
 
 ## License
 
@@ -304,7 +319,7 @@ See the [LICENSE](LICENSE) file for license details.
 Licenses of direct dependencies:
 
 - Forked version of gojq - https://github.com/itchyny/gojq/blob/main/LICENSE (MIT)
-- Forked version of readline - https://github.com/chzyer/readline/blob/master/LICENSE (MIT)
+- github.com/ergochat/readline - https://github.com/ergochat/readline/blob/master/LICENSE (MIT)
 - github.com/BurntSushi/toml - https://github.com/BurntSushi/toml/blob/master/COPYING (MIT)
 - github.com/creasty/defaults - https://github.com/creasty/defaults/blob/master/LICENSE (MIT)
 - github.com/gomarkdown/markdown - https://github.com/gomarkdown/markdown/blob/master/LICENSE.txt (BSD)

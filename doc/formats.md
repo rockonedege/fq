@@ -2,134 +2,148 @@
 
 [fq -rn -L . 'include "formats"; formats_table']: sh-start
 
-|Name                                                    |Description                                                                                                  |Dependencies|
-|-                                                       |-                                                                                                            |-|
-|[`aac_frame`](#aac_frame)                               |Advanced&nbsp;Audio&nbsp;Coding&nbsp;frame                                                                   |<sub></sub>|
-|`adts`                                                  |Audio&nbsp;Data&nbsp;Transport&nbsp;Stream                                                                   |<sub>`adts_frame`</sub>|
-|`adts_frame`                                            |Audio&nbsp;Data&nbsp;Transport&nbsp;Stream&nbsp;frame                                                        |<sub>`aac_frame`</sub>|
-|`aiff`                                                  |Audio&nbsp;Interchange&nbsp;File&nbsp;Format                                                                 |<sub></sub>|
-|`amf0`                                                  |Action&nbsp;Message&nbsp;Format&nbsp;0                                                                       |<sub></sub>|
-|`apev2`                                                 |APEv2&nbsp;metadata&nbsp;tag                                                                                 |<sub>`image`</sub>|
-|[`apple_bookmark`](#apple_bookmark)                     |Apple&nbsp;BookmarkData                                                                                      |<sub></sub>|
-|`ar`                                                    |Unix&nbsp;archive                                                                                            |<sub>`probe`</sub>|
-|[`asn1_ber`](#asn1_ber)                                 |ASN1&nbsp;BER&nbsp;(basic&nbsp;encoding&nbsp;rules,&nbsp;also&nbsp;CER&nbsp;and&nbsp;DER)                    |<sub></sub>|
-|`av1_ccr`                                               |AV1&nbsp;Codec&nbsp;Configuration&nbsp;Record                                                                |<sub></sub>|
-|`av1_frame`                                             |AV1&nbsp;frame                                                                                               |<sub>`av1_obu`</sub>|
-|`av1_obu`                                               |AV1&nbsp;Open&nbsp;Bitstream&nbsp;Unit                                                                       |<sub></sub>|
-|`avc_annexb`                                            |H.264/AVC&nbsp;Annex&nbsp;B                                                                                  |<sub>`avc_nalu`</sub>|
-|[`avc_au`](#avc_au)                                     |H.264/AVC&nbsp;Access&nbsp;Unit                                                                              |<sub>`avc_nalu`</sub>|
-|`avc_dcr`                                               |H.264/AVC&nbsp;Decoder&nbsp;Configuration&nbsp;Record                                                        |<sub>`avc_nalu`</sub>|
-|`avc_nalu`                                              |H.264/AVC&nbsp;Network&nbsp;Access&nbsp;Layer&nbsp;Unit                                                      |<sub>`avc_sps` `avc_pps` `avc_sei`</sub>|
-|`avc_pps`                                               |H.264/AVC&nbsp;Picture&nbsp;Parameter&nbsp;Set                                                               |<sub></sub>|
-|`avc_sei`                                               |H.264/AVC&nbsp;Supplemental&nbsp;Enhancement&nbsp;Information                                                |<sub></sub>|
-|`avc_sps`                                               |H.264/AVC&nbsp;Sequence&nbsp;Parameter&nbsp;Set                                                              |<sub></sub>|
-|[`avi`](#avi)                                           |Audio&nbsp;Video&nbsp;Interleaved                                                                            |<sub>`avc_au` `hevc_au` `mp3_frame` `flac_frame`</sub>|
-|[`avro_ocf`](#avro_ocf)                                 |Avro&nbsp;object&nbsp;container&nbsp;file                                                                    |<sub></sub>|
-|[`bencode`](#bencode)                                   |BitTorrent&nbsp;bencoding                                                                                    |<sub></sub>|
-|`bitcoin_blkdat`                                        |Bitcoin&nbsp;blk.dat                                                                                         |<sub>`bitcoin_block`</sub>|
-|[`bitcoin_block`](#bitcoin_block)                       |Bitcoin&nbsp;block                                                                                           |<sub>`bitcoin_transaction`</sub>|
-|`bitcoin_script`                                        |Bitcoin&nbsp;script                                                                                          |<sub></sub>|
-|`bitcoin_transaction`                                   |Bitcoin&nbsp;transaction                                                                                     |<sub>`bitcoin_script`</sub>|
-|[`bits`](#bits)                                         |Raw&nbsp;bits                                                                                                |<sub></sub>|
-|[`bplist`](#bplist)                                     |Apple&nbsp;Binary&nbsp;Property&nbsp;List                                                                    |<sub></sub>|
-|`bsd_loopback_frame`                                    |BSD&nbsp;loopback&nbsp;frame                                                                                 |<sub>`inet_packet`</sub>|
-|[`bson`](#bson)                                         |Binary&nbsp;JSON                                                                                             |<sub></sub>|
-|[`bytes`](#bytes)                                       |Raw&nbsp;bytes                                                                                               |<sub></sub>|
-|`bzip2`                                                 |bzip2&nbsp;compression                                                                                       |<sub>`probe`</sub>|
-|[`cbor`](#cbor)                                         |Concise&nbsp;Binary&nbsp;Object&nbsp;Representation                                                          |<sub></sub>|
-|[`csv`](#csv)                                           |Comma&nbsp;separated&nbsp;values                                                                             |<sub></sub>|
-|`dns`                                                   |DNS&nbsp;packet                                                                                              |<sub></sub>|
-|`dns_tcp`                                               |DNS&nbsp;packet&nbsp;(TCP)                                                                                   |<sub></sub>|
-|`elf`                                                   |Executable&nbsp;and&nbsp;Linkable&nbsp;Format                                                                |<sub></sub>|
-|`ether8023_frame`                                       |Ethernet&nbsp;802.3&nbsp;frame                                                                               |<sub>`inet_packet`</sub>|
-|`exif`                                                  |Exchangeable&nbsp;Image&nbsp;File&nbsp;Format                                                                |<sub></sub>|
-|`fairplay_spc`                                          |FairPlay&nbsp;Server&nbsp;Playback&nbsp;Context                                                              |<sub></sub>|
-|`flac`                                                  |Free&nbsp;Lossless&nbsp;Audio&nbsp;Codec&nbsp;file                                                           |<sub>`flac_metadatablocks` `flac_frame`</sub>|
-|[`flac_frame`](#flac_frame)                             |FLAC&nbsp;frame                                                                                              |<sub></sub>|
-|`flac_metadatablock`                                    |FLAC&nbsp;metadatablock                                                                                      |<sub>`flac_streaminfo` `flac_picture` `vorbis_comment`</sub>|
-|`flac_metadatablocks`                                   |FLAC&nbsp;metadatablocks                                                                                     |<sub>`flac_metadatablock`</sub>|
-|`flac_picture`                                          |FLAC&nbsp;metadatablock&nbsp;picture                                                                         |<sub>`image`</sub>|
-|`flac_streaminfo`                                       |FLAC&nbsp;streaminfo                                                                                         |<sub></sub>|
-|`gif`                                                   |Graphics&nbsp;Interchange&nbsp;Format                                                                        |<sub></sub>|
-|`gzip`                                                  |gzip&nbsp;compression                                                                                        |<sub>`probe`</sub>|
-|`hevc_annexb`                                           |H.265/HEVC&nbsp;Annex&nbsp;B                                                                                 |<sub>`hevc_nalu`</sub>|
-|[`hevc_au`](#hevc_au)                                   |H.265/HEVC&nbsp;Access&nbsp;Unit                                                                             |<sub>`hevc_nalu`</sub>|
-|`hevc_dcr`                                              |H.265/HEVC&nbsp;Decoder&nbsp;Configuration&nbsp;Record                                                       |<sub>`hevc_nalu`</sub>|
-|`hevc_nalu`                                             |H.265/HEVC&nbsp;Network&nbsp;Access&nbsp;Layer&nbsp;Unit                                                     |<sub>`hevc_vps` `hevc_pps` `hevc_sps`</sub>|
-|`hevc_pps`                                              |H.265/HEVC&nbsp;Picture&nbsp;Parameter&nbsp;Set                                                              |<sub></sub>|
-|`hevc_sps`                                              |H.265/HEVC&nbsp;Sequence&nbsp;Parameter&nbsp;Set                                                             |<sub></sub>|
-|`hevc_vps`                                              |H.265/HEVC&nbsp;Video&nbsp;Parameter&nbsp;Set                                                                |<sub></sub>|
-|[`html`](#html)                                         |HyperText&nbsp;Markup&nbsp;Language                                                                          |<sub></sub>|
-|`icc_profile`                                           |International&nbsp;Color&nbsp;Consortium&nbsp;profile                                                        |<sub></sub>|
-|`icmp`                                                  |Internet&nbsp;Control&nbsp;Message&nbsp;Protocol                                                             |<sub></sub>|
-|`icmpv6`                                                |Internet&nbsp;Control&nbsp;Message&nbsp;Protocol&nbsp;v6                                                     |<sub></sub>|
-|`id3v1`                                                 |ID3v1&nbsp;metadata                                                                                          |<sub></sub>|
-|`id3v11`                                                |ID3v1.1&nbsp;metadata                                                                                        |<sub></sub>|
-|`id3v2`                                                 |ID3v2&nbsp;metadata                                                                                          |<sub>`image`</sub>|
-|`ipv4_packet`                                           |Internet&nbsp;protocol&nbsp;v4&nbsp;packet                                                                   |<sub>`ip_packet`</sub>|
-|`ipv6_packet`                                           |Internet&nbsp;protocol&nbsp;v6&nbsp;packet                                                                   |<sub>`ip_packet`</sub>|
-|`jpeg`                                                  |Joint&nbsp;Photographic&nbsp;Experts&nbsp;Group&nbsp;file                                                    |<sub>`exif` `icc_profile`</sub>|
-|`json`                                                  |JavaScript&nbsp;Object&nbsp;Notation                                                                         |<sub></sub>|
-|`jsonl`                                                 |JavaScript&nbsp;Object&nbsp;Notation&nbsp;Lines                                                              |<sub></sub>|
-|[`macho`](#macho)                                       |Mach-O&nbsp;macOS&nbsp;executable                                                                            |<sub></sub>|
-|`macho_fat`                                             |Fat&nbsp;Mach-O&nbsp;macOS&nbsp;executable&nbsp;(multi-architecture)                                         |<sub>`macho`</sub>|
-|[`markdown`](#markdown)                                 |Markdown                                                                                                     |<sub></sub>|
-|[`matroska`](#matroska)                                 |Matroska&nbsp;file                                                                                           |<sub>`aac_frame` `av1_ccr` `av1_frame` `avc_au` `avc_dcr` `flac_frame` `flac_metadatablocks` `hevc_au` `hevc_dcr` `image` `mp3_frame` `mpeg_asc` `mpeg_pes_packet` `mpeg_spu` `opus_packet` `vorbis_packet` `vp8_frame` `vp9_cfm` `vp9_frame`</sub>|
-|[`mp3`](#mp3)                                           |MP3&nbsp;file                                                                                                |<sub>`id3v2` `id3v1` `id3v11` `apev2` `mp3_frame`</sub>|
-|`mp3_frame`                                             |MPEG&nbsp;audio&nbsp;layer&nbsp;3&nbsp;frame                                                                 |<sub>`mp3_frame_tags`</sub>|
-|`mp3_frame_vbri`                                        |MP3&nbsp;frame&nbsp;Fraunhofer&nbsp;encoder&nbsp;variable&nbsp;bitrate&nbsp;tag                              |<sub></sub>|
-|`mp3_frame_xing`                                        |MP3&nbsp;frame&nbsp;Xing/Info&nbsp;tag                                                                       |<sub></sub>|
-|[`mp4`](#mp4)                                           |ISOBMFF,&nbsp;QuickTime&nbsp;and&nbsp;similar                                                                |<sub>`aac_frame` `av1_ccr` `av1_frame` `avc_au` `avc_dcr` `flac_frame` `flac_metadatablocks` `hevc_au` `hevc_dcr` `icc_profile` `id3v2` `image` `jpeg` `mp3_frame` `mpeg_es` `mpeg_pes_packet` `opus_packet` `png` `prores_frame` `protobuf_widevine` `pssh_playready` `vorbis_packet` `vp9_frame` `vpx_ccr`</sub>|
-|`mpeg_asc`                                              |MPEG-4&nbsp;Audio&nbsp;Specific&nbsp;Config                                                                  |<sub></sub>|
-|`mpeg_es`                                               |MPEG&nbsp;Elementary&nbsp;Stream                                                                             |<sub>`mpeg_asc` `vorbis_packet`</sub>|
-|`mpeg_pes`                                              |MPEG&nbsp;Packetized&nbsp;elementary&nbsp;stream                                                             |<sub>`mpeg_pes_packet` `mpeg_spu`</sub>|
-|`mpeg_pes_packet`                                       |MPEG&nbsp;Packetized&nbsp;elementary&nbsp;stream&nbsp;packet                                                 |<sub></sub>|
-|`mpeg_spu`                                              |Sub&nbsp;Picture&nbsp;Unit&nbsp;(DVD&nbsp;subtitle)                                                          |<sub></sub>|
-|`mpeg_ts`                                               |MPEG&nbsp;Transport&nbsp;Stream                                                                              |<sub></sub>|
-|[`msgpack`](#msgpack)                                   |MessagePack                                                                                                  |<sub></sub>|
-|`ogg`                                                   |OGG&nbsp;file                                                                                                |<sub>`ogg_page` `vorbis_packet` `opus_packet` `flac_metadatablock` `flac_frame`</sub>|
-|`ogg_page`                                              |OGG&nbsp;page                                                                                                |<sub></sub>|
-|`opus_packet`                                           |Opus&nbsp;packet                                                                                             |<sub>`vorbis_comment`</sub>|
-|[`pcap`](#pcap)                                         |PCAP&nbsp;packet&nbsp;capture                                                                                |<sub>`link_frame` `tcp_stream` `ipv4_packet`</sub>|
-|`pcapng`                                                |PCAPNG&nbsp;packet&nbsp;capture                                                                              |<sub>`link_frame` `tcp_stream` `ipv4_packet`</sub>|
-|[`pg_btree`](#pg_btree)                                 |PostgreSQL&nbsp;btree&nbsp;index&nbsp;file                                                                   |<sub></sub>|
-|[`pg_control`](#pg_control)                             |PostgreSQL&nbsp;control&nbsp;file                                                                            |<sub></sub>|
-|[`pg_heap`](#pg_heap)                                   |PostgreSQL&nbsp;heap&nbsp;file                                                                               |<sub></sub>|
-|`png`                                                   |Portable&nbsp;Network&nbsp;Graphics&nbsp;file                                                                |<sub>`icc_profile` `exif`</sub>|
-|`prores_frame`                                          |Apple&nbsp;ProRes&nbsp;frame                                                                                 |<sub></sub>|
-|[`protobuf`](#protobuf)                                 |Protobuf                                                                                                     |<sub></sub>|
-|`protobuf_widevine`                                     |Widevine&nbsp;protobuf                                                                                       |<sub>`protobuf`</sub>|
-|`pssh_playready`                                        |PlayReady&nbsp;PSSH                                                                                          |<sub></sub>|
-|[`rtmp`](#rtmp)                                         |Real-Time&nbsp;Messaging&nbsp;Protocol                                                                       |<sub>`amf0` `mpeg_asc`</sub>|
-|`sll2_packet`                                           |Linux&nbsp;cooked&nbsp;capture&nbsp;encapsulation&nbsp;v2                                                    |<sub>`inet_packet`</sub>|
-|`sll_packet`                                            |Linux&nbsp;cooked&nbsp;capture&nbsp;encapsulation                                                            |<sub>`inet_packet`</sub>|
-|`tar`                                                   |Tar&nbsp;archive                                                                                             |<sub>`probe`</sub>|
-|`tcp_segment`                                           |Transmission&nbsp;control&nbsp;protocol&nbsp;segment                                                         |<sub></sub>|
-|`tiff`                                                  |Tag&nbsp;Image&nbsp;File&nbsp;Format                                                                         |<sub>`icc_profile`</sub>|
-|[`tls`](#tls)                                           |Transport&nbsp;layer&nbsp;security                                                                           |<sub>`asn1_ber`</sub>|
-|`toml`                                                  |Tom's&nbsp;Obvious,&nbsp;Minimal&nbsp;Language                                                               |<sub></sub>|
-|[`tzif`](#tzif)                                         |Time&nbsp;Zone&nbsp;Information&nbsp;Format                                                                  |<sub></sub>|
-|`udp_datagram`                                          |User&nbsp;datagram&nbsp;protocol                                                                             |<sub>`udp_payload`</sub>|
-|`vorbis_comment`                                        |Vorbis&nbsp;comment                                                                                          |<sub>`flac_picture`</sub>|
-|`vorbis_packet`                                         |Vorbis&nbsp;packet                                                                                           |<sub>`vorbis_comment`</sub>|
-|`vp8_frame`                                             |VP8&nbsp;frame                                                                                               |<sub></sub>|
-|`vp9_cfm`                                               |VP9&nbsp;Codec&nbsp;Feature&nbsp;Metadata                                                                    |<sub></sub>|
-|`vp9_frame`                                             |VP9&nbsp;frame                                                                                               |<sub></sub>|
-|`vpx_ccr`                                               |VPX&nbsp;Codec&nbsp;Configuration&nbsp;Record                                                                |<sub></sub>|
-|[`wasm`](#wasm)                                         |WebAssembly&nbsp;Binary&nbsp;Format                                                                          |<sub></sub>|
-|`wav`                                                   |WAV&nbsp;file                                                                                                |<sub>`id3v2` `id3v1` `id3v11`</sub>|
-|`webp`                                                  |WebP&nbsp;image                                                                                              |<sub>`vp8_frame`</sub>|
-|[`xml`](#xml)                                           |Extensible&nbsp;Markup&nbsp;Language                                                                         |<sub></sub>|
-|`yaml`                                                  |YAML&nbsp;Ain't&nbsp;Markup&nbsp;Language                                                                    |<sub></sub>|
-|[`zip`](#zip)                                           |ZIP&nbsp;archive                                                                                             |<sub>`probe`</sub>|
-|`image`                                                 |Group                                                                                                        |<sub>`gif` `jpeg` `mp4` `png` `tiff` `webp`</sub>|
-|`inet_packet`                                           |Group                                                                                                        |<sub>`ipv4_packet` `ipv6_packet`</sub>|
-|`ip_packet`                                             |Group                                                                                                        |<sub>`icmp` `icmpv6` `tcp_segment` `udp_datagram`</sub>|
-|`link_frame`                                            |Group                                                                                                        |<sub>`bsd_loopback_frame` `ether8023_frame` `ipv4_packet` `ipv6_packet` `sll2_packet` `sll_packet`</sub>|
-|`mp3_frame_tags`                                        |Group                                                                                                        |<sub>`mp3_frame_vbri` `mp3_frame_xing`</sub>|
-|`probe`                                                 |Group                                                                                                        |<sub>`adts` `aiff` `apple_bookmark` `ar` `avi` `avro_ocf` `bitcoin_blkdat` `bplist` `bzip2` `elf` `flac` `gif` `gzip` `html` `jpeg` `json` `jsonl` `macho` `macho_fat` `matroska` `mp3` `mp4` `mpeg_ts` `ogg` `pcap` `pcapng` `png` `tar` `tiff` `toml` `tzif` `wasm` `wav` `webp` `xml` `yaml` `zip`</sub>|
-|`tcp_stream`                                            |Group                                                                                                        |<sub>`dns_tcp` `rtmp` `tls`</sub>|
-|`udp_payload`                                           |Group                                                                                                        |<sub>`dns`</sub>|
+|Name                                                            |Description                                                                                                  |Dependencies|
+|-                                                               |-                                                                                                            |-|
+|[`aac_frame`](#aac_frame)                                       |Advanced&nbsp;Audio&nbsp;Coding&nbsp;frame                                                                   |<sub></sub>|
+|`adts`                                                          |Audio&nbsp;Data&nbsp;Transport&nbsp;Stream                                                                   |<sub>`adts_frame`</sub>|
+|`adts_frame`                                                    |Audio&nbsp;Data&nbsp;Transport&nbsp;Stream&nbsp;frame                                                        |<sub>`aac_frame`</sub>|
+|`aiff`                                                          |Audio&nbsp;Interchange&nbsp;File&nbsp;Format                                                                 |<sub></sub>|
+|`amf0`                                                          |Action&nbsp;Message&nbsp;Format&nbsp;0                                                                       |<sub></sub>|
+|`apev2`                                                         |APEv2&nbsp;metadata&nbsp;tag                                                                                 |<sub>`image`</sub>|
+|[`apple_bookmark`](#apple_bookmark)                             |Apple&nbsp;BookmarkData                                                                                      |<sub></sub>|
+|`ar`                                                            |Unix&nbsp;archive                                                                                            |<sub>`probe`</sub>|
+|[`asn1_ber`](#asn1_ber)                                         |ASN1&nbsp;BER&nbsp;(basic&nbsp;encoding&nbsp;rules,&nbsp;also&nbsp;CER&nbsp;and&nbsp;DER)                    |<sub></sub>|
+|`av1_ccr`                                                       |AV1&nbsp;Codec&nbsp;Configuration&nbsp;Record                                                                |<sub>`av1_obu`</sub>|
+|`av1_frame`                                                     |AV1&nbsp;frame                                                                                               |<sub>`av1_obu`</sub>|
+|`av1_obu`                                                       |AV1&nbsp;Open&nbsp;Bitstream&nbsp;Unit                                                                       |<sub></sub>|
+|`avc_annexb`                                                    |H.264/AVC&nbsp;Annex&nbsp;B                                                                                  |<sub>`avc_nalu`</sub>|
+|[`avc_au`](#avc_au)                                             |H.264/AVC&nbsp;Access&nbsp;Unit                                                                              |<sub>`avc_nalu`</sub>|
+|`avc_dcr`                                                       |H.264/AVC&nbsp;Decoder&nbsp;Configuration&nbsp;Record                                                        |<sub>`avc_nalu`</sub>|
+|`avc_nalu`                                                      |H.264/AVC&nbsp;Network&nbsp;Access&nbsp;Layer&nbsp;Unit                                                      |<sub>`avc_sps` `avc_pps` `avc_sei`</sub>|
+|`avc_pps`                                                       |H.264/AVC&nbsp;Picture&nbsp;Parameter&nbsp;Set                                                               |<sub></sub>|
+|`avc_sei`                                                       |H.264/AVC&nbsp;Supplemental&nbsp;Enhancement&nbsp;Information                                                |<sub></sub>|
+|`avc_sps`                                                       |H.264/AVC&nbsp;Sequence&nbsp;Parameter&nbsp;Set                                                              |<sub></sub>|
+|[`avi`](#avi)                                                   |Audio&nbsp;Video&nbsp;Interleaved                                                                            |<sub>`avc_au` `hevc_au` `mp3_frame` `flac_frame`</sub>|
+|[`avro_ocf`](#avro_ocf)                                         |Avro&nbsp;object&nbsp;container&nbsp;file                                                                    |<sub></sub>|
+|[`bencode`](#bencode)                                           |BitTorrent&nbsp;bencoding                                                                                    |<sub></sub>|
+|`bitcoin_blkdat`                                                |Bitcoin&nbsp;blk.dat                                                                                         |<sub>`bitcoin_block`</sub>|
+|[`bitcoin_block`](#bitcoin_block)                               |Bitcoin&nbsp;block                                                                                           |<sub>`bitcoin_transaction`</sub>|
+|`bitcoin_script`                                                |Bitcoin&nbsp;script                                                                                          |<sub></sub>|
+|`bitcoin_transaction`                                           |Bitcoin&nbsp;transaction                                                                                     |<sub>`bitcoin_script`</sub>|
+|[`bits`](#bits)                                                 |Raw&nbsp;bits                                                                                                |<sub></sub>|
+|[`bplist`](#bplist)                                             |Apple&nbsp;Binary&nbsp;Property&nbsp;List                                                                    |<sub></sub>|
+|`bsd_loopback_frame`                                            |BSD&nbsp;loopback&nbsp;frame                                                                                 |<sub>`inet_packet`</sub>|
+|[`bson`](#bson)                                                 |Binary&nbsp;JSON                                                                                             |<sub></sub>|
+|[`bytes`](#bytes)                                               |Raw&nbsp;bytes                                                                                               |<sub></sub>|
+|`bzip2`                                                         |bzip2&nbsp;compression                                                                                       |<sub>`probe`</sub>|
+|[`caff`](#caff)                                                 |Live2D&nbsp;Cubism&nbsp;archive                                                                              |<sub>`probe`</sub>|
+|[`cbor`](#cbor)                                                 |Concise&nbsp;Binary&nbsp;Object&nbsp;Representation                                                          |<sub></sub>|
+|[`csv`](#csv)                                                   |Comma&nbsp;separated&nbsp;values                                                                             |<sub></sub>|
+|`dns`                                                           |DNS&nbsp;packet                                                                                              |<sub></sub>|
+|`dns_tcp`                                                       |DNS&nbsp;packet&nbsp;(TCP)                                                                                   |<sub></sub>|
+|`elf`                                                           |Executable&nbsp;and&nbsp;Linkable&nbsp;Format                                                                |<sub></sub>|
+|`ether8023_frame`                                               |Ethernet&nbsp;802.3&nbsp;frame                                                                               |<sub>`inet_packet`</sub>|
+|`exif`                                                          |Exchangeable&nbsp;Image&nbsp;File&nbsp;Format                                                                |<sub></sub>|
+|`fairplay_spc`                                                  |FairPlay&nbsp;Server&nbsp;Playback&nbsp;Context                                                              |<sub></sub>|
+|[`fit`](#fit)                                                   |Garmin&nbsp;Flexible&nbsp;and&nbsp;Interoperable&nbsp;Data&nbsp;Transfer                                     |<sub></sub>|
+|`flac`                                                          |Free&nbsp;Lossless&nbsp;Audio&nbsp;Codec&nbsp;file                                                           |<sub>`flac_metadatablocks` `flac_frame`</sub>|
+|[`flac_frame`](#flac_frame)                                     |FLAC&nbsp;frame                                                                                              |<sub></sub>|
+|`flac_metadatablock`                                            |FLAC&nbsp;metadatablock                                                                                      |<sub>`flac_streaminfo` `flac_picture` `vorbis_comment`</sub>|
+|`flac_metadatablocks`                                           |FLAC&nbsp;metadatablocks                                                                                     |<sub>`flac_metadatablock`</sub>|
+|`flac_picture`                                                  |FLAC&nbsp;metadatablock&nbsp;picture                                                                         |<sub>`image`</sub>|
+|`flac_streaminfo`                                               |FLAC&nbsp;streaminfo                                                                                         |<sub></sub>|
+|`gif`                                                           |Graphics&nbsp;Interchange&nbsp;Format                                                                        |<sub></sub>|
+|`gzip`                                                          |gzip&nbsp;compression                                                                                        |<sub>`probe`</sub>|
+|`hevc_annexb`                                                   |H.265/HEVC&nbsp;Annex&nbsp;B                                                                                 |<sub>`hevc_nalu`</sub>|
+|[`hevc_au`](#hevc_au)                                           |H.265/HEVC&nbsp;Access&nbsp;Unit                                                                             |<sub>`hevc_nalu`</sub>|
+|`hevc_dcr`                                                      |H.265/HEVC&nbsp;Decoder&nbsp;Configuration&nbsp;Record                                                       |<sub>`hevc_nalu`</sub>|
+|`hevc_nalu`                                                     |H.265/HEVC&nbsp;Network&nbsp;Access&nbsp;Layer&nbsp;Unit                                                     |<sub>`hevc_vps` `hevc_pps` `hevc_sps`</sub>|
+|`hevc_pps`                                                      |H.265/HEVC&nbsp;Picture&nbsp;Parameter&nbsp;Set                                                              |<sub></sub>|
+|`hevc_sps`                                                      |H.265/HEVC&nbsp;Sequence&nbsp;Parameter&nbsp;Set                                                             |<sub></sub>|
+|`hevc_vps`                                                      |H.265/HEVC&nbsp;Video&nbsp;Parameter&nbsp;Set                                                                |<sub></sub>|
+|[`html`](#html)                                                 |HyperText&nbsp;Markup&nbsp;Language                                                                          |<sub></sub>|
+|`icc_profile`                                                   |International&nbsp;Color&nbsp;Consortium&nbsp;profile                                                        |<sub></sub>|
+|`icmp`                                                          |Internet&nbsp;Control&nbsp;Message&nbsp;Protocol                                                             |<sub></sub>|
+|`icmpv6`                                                        |Internet&nbsp;Control&nbsp;Message&nbsp;Protocol&nbsp;v6                                                     |<sub></sub>|
+|`id3v1`                                                         |ID3v1&nbsp;metadata                                                                                          |<sub></sub>|
+|`id3v11`                                                        |ID3v1.1&nbsp;metadata                                                                                        |<sub></sub>|
+|`id3v2`                                                         |ID3v2&nbsp;metadata                                                                                          |<sub>`image`</sub>|
+|`ipv4_packet`                                                   |Internet&nbsp;protocol&nbsp;v4&nbsp;packet                                                                   |<sub>`ip_packet`</sub>|
+|`ipv6_packet`                                                   |Internet&nbsp;protocol&nbsp;v6&nbsp;packet                                                                   |<sub>`ip_packet`</sub>|
+|`jp2c`                                                          |JPEG&nbsp;2000&nbsp;codestream                                                                               |<sub></sub>|
+|`jpeg`                                                          |Joint&nbsp;Photographic&nbsp;Experts&nbsp;Group&nbsp;file                                                    |<sub>`exif` `icc_profile`</sub>|
+|`json`                                                          |JavaScript&nbsp;Object&nbsp;Notation                                                                         |<sub></sub>|
+|`jsonl`                                                         |JavaScript&nbsp;Object&nbsp;Notation&nbsp;Lines                                                              |<sub></sub>|
+|[`leveldb_descriptor`](#leveldb_descriptor)                     |LevelDB&nbsp;Descriptor                                                                                      |<sub></sub>|
+|[`leveldb_log`](#leveldb_log)                                   |LevelDB&nbsp;Log                                                                                             |<sub></sub>|
+|[`leveldb_table`](#leveldb_table)                               |LevelDB&nbsp;Table                                                                                           |<sub></sub>|
+|[`luajit`](#luajit)                                             |LuaJIT&nbsp;2.0&nbsp;bytecode                                                                                |<sub></sub>|
+|[`macho`](#macho)                                               |Mach-O&nbsp;macOS&nbsp;executable                                                                            |<sub></sub>|
+|`macho_fat`                                                     |Fat&nbsp;Mach-O&nbsp;macOS&nbsp;executable&nbsp;(multi-architecture)                                         |<sub>`macho`</sub>|
+|[`markdown`](#markdown)                                         |Markdown                                                                                                     |<sub></sub>|
+|[`matroska`](#matroska)                                         |Matroska&nbsp;file                                                                                           |<sub>`aac_frame` `av1_ccr` `av1_frame` `avc_au` `avc_dcr` `flac_frame` `flac_metadatablocks` `hevc_au` `hevc_dcr` `image` `mp3_frame` `mpeg_asc` `mpeg_pes_packet` `mpeg_spu` `opus_packet` `vorbis_packet` `vp8_frame` `vp9_cfm` `vp9_frame`</sub>|
+|[`midi`](#midi)                                                 |Standard&nbsp;MIDI&nbsp;file                                                                                 |<sub></sub>|
+|[`moc3`](#moc3)                                                 |MOC3&nbsp;file                                                                                               |<sub></sub>|
+|[`mp3`](#mp3)                                                   |MP3&nbsp;file                                                                                                |<sub>`id3v2` `id3v1` `id3v11` `apev2` `mp3_frame`</sub>|
+|`mp3_frame`                                                     |MPEG&nbsp;audio&nbsp;layer&nbsp;3&nbsp;frame                                                                 |<sub>`mp3_frame_tags`</sub>|
+|`mp3_frame_vbri`                                                |MP3&nbsp;frame&nbsp;Fraunhofer&nbsp;encoder&nbsp;variable&nbsp;bitrate&nbsp;tag                              |<sub></sub>|
+|`mp3_frame_xing`                                                |MP3&nbsp;frame&nbsp;Xing/Info&nbsp;tag                                                                       |<sub></sub>|
+|[`mp4`](#mp4)                                                   |ISOBMFF,&nbsp;QuickTime&nbsp;and&nbsp;similar                                                                |<sub>`aac_frame` `av1_ccr` `av1_frame` `avc_au` `avc_dcr` `flac_frame` `flac_metadatablocks` `hevc_au` `hevc_dcr` `icc_profile` `id3v2` `image` `jp2c` `jpeg` `mp3_frame` `mpeg_es` `mpeg_pes_packet` `opus_packet` `png` `prores_frame` `protobuf_widevine` `pssh_playready` `vorbis_packet` `vp9_frame` `vpx_ccr`</sub>|
+|`mpeg_asc`                                                      |MPEG-4&nbsp;Audio&nbsp;Specific&nbsp;Config                                                                  |<sub></sub>|
+|`mpeg_es`                                                       |MPEG&nbsp;Elementary&nbsp;Stream                                                                             |<sub>`mpeg_asc` `vorbis_packet`</sub>|
+|`mpeg_pes`                                                      |MPEG&nbsp;Packetized&nbsp;elementary&nbsp;stream                                                             |<sub>`mpeg_pes_packet` `mpeg_spu`</sub>|
+|`mpeg_pes_packet`                                               |MPEG&nbsp;Packetized&nbsp;elementary&nbsp;stream&nbsp;packet                                                 |<sub></sub>|
+|`mpeg_spu`                                                      |Sub&nbsp;Picture&nbsp;Unit&nbsp;(DVD&nbsp;subtitle)                                                          |<sub></sub>|
+|`mpeg_ts`                                                       |MPEG&nbsp;Transport&nbsp;Stream                                                                              |<sub></sub>|
+|[`msgpack`](#msgpack)                                           |MessagePack                                                                                                  |<sub></sub>|
+|[`negentropy`](#negentropy)                                     |Negentropy&nbsp;message                                                                                      |<sub></sub>|
+|[`nes`](#nes)                                                   |iNES/NES&nbsp;2.0&nbsp;cartridge&nbsp;ROM&nbsp;format                                                        |<sub></sub>|
+|`ogg`                                                           |OGG&nbsp;file                                                                                                |<sub>`ogg_page` `vorbis_packet` `opus_packet` `flac_metadatablock` `flac_frame`</sub>|
+|`ogg_page`                                                      |OGG&nbsp;page                                                                                                |<sub></sub>|
+|[`opentimestamps`](#opentimestamps)                             |OpenTimestamps&nbsp;file                                                                                     |<sub></sub>|
+|`opus_packet`                                                   |Opus&nbsp;packet                                                                                             |<sub>`vorbis_comment`</sub>|
+|[`pcap`](#pcap)                                                 |PCAP&nbsp;packet&nbsp;capture                                                                                |<sub>`link_frame` `tcp_stream` `ipv4_packet`</sub>|
+|`pcapng`                                                        |PCAPNG&nbsp;packet&nbsp;capture                                                                              |<sub>`link_frame` `tcp_stream` `ipv4_packet`</sub>|
+|[`pg_btree`](#pg_btree)                                         |PostgreSQL&nbsp;btree&nbsp;index&nbsp;file                                                                   |<sub></sub>|
+|[`pg_control`](#pg_control)                                     |PostgreSQL&nbsp;control&nbsp;file                                                                            |<sub></sub>|
+|[`pg_heap`](#pg_heap)                                           |PostgreSQL&nbsp;heap&nbsp;file                                                                               |<sub></sub>|
+|`png`                                                           |Portable&nbsp;Network&nbsp;Graphics&nbsp;file                                                                |<sub>`icc_profile` `exif`</sub>|
+|`prores_frame`                                                  |Apple&nbsp;ProRes&nbsp;frame                                                                                 |<sub></sub>|
+|[`protobuf`](#protobuf)                                         |Protobuf                                                                                                     |<sub></sub>|
+|`protobuf_widevine`                                             |Widevine&nbsp;protobuf                                                                                       |<sub>`protobuf`</sub>|
+|`pssh_playready`                                                |PlayReady&nbsp;PSSH                                                                                          |<sub></sub>|
+|[`rtmp`](#rtmp)                                                 |Real-Time&nbsp;Messaging&nbsp;Protocol                                                                       |<sub>`amf0` `mpeg_asc`</sub>|
+|`sll2_packet`                                                   |Linux&nbsp;cooked&nbsp;capture&nbsp;encapsulation&nbsp;v2                                                    |<sub>`inet_packet`</sub>|
+|`sll_packet`                                                    |Linux&nbsp;cooked&nbsp;capture&nbsp;encapsulation                                                            |<sub>`inet_packet`</sub>|
+|[`tap`](#tap)                                                   |TAP&nbsp;tape&nbsp;format&nbsp;for&nbsp;ZX&nbsp;Spectrum&nbsp;computers                                      |<sub></sub>|
+|`tar`                                                           |Tar&nbsp;archive                                                                                             |<sub>`probe`</sub>|
+|`tcp_segment`                                                   |Transmission&nbsp;control&nbsp;protocol&nbsp;segment                                                         |<sub></sub>|
+|`tiff`                                                          |Tag&nbsp;Image&nbsp;File&nbsp;Format                                                                         |<sub>`icc_profile`</sub>|
+|[`tls`](#tls)                                                   |Transport&nbsp;layer&nbsp;security                                                                           |<sub>`asn1_ber`</sub>|
+|`toml`                                                          |Tom's&nbsp;Obvious,&nbsp;Minimal&nbsp;Language                                                               |<sub></sub>|
+|[`tzif`](#tzif)                                                 |Time&nbsp;Zone&nbsp;Information&nbsp;Format                                                                  |<sub></sub>|
+|[`tzx`](#tzx)                                                   |TZX&nbsp;tape&nbsp;format&nbsp;for&nbsp;ZX&nbsp;Spectrum&nbsp;computers                                      |<sub>`tap`</sub>|
+|`udp_datagram`                                                  |User&nbsp;datagram&nbsp;protocol                                                                             |<sub>`udp_payload`</sub>|
+|`vorbis_comment`                                                |Vorbis&nbsp;comment                                                                                          |<sub>`flac_picture`</sub>|
+|`vorbis_packet`                                                 |Vorbis&nbsp;packet                                                                                           |<sub>`vorbis_comment`</sub>|
+|`vp8_frame`                                                     |VP8&nbsp;frame                                                                                               |<sub></sub>|
+|`vp9_cfm`                                                       |VP9&nbsp;Codec&nbsp;Feature&nbsp;Metadata                                                                    |<sub></sub>|
+|`vp9_frame`                                                     |VP9&nbsp;frame                                                                                               |<sub></sub>|
+|`vpx_ccr`                                                       |VPX&nbsp;Codec&nbsp;Configuration&nbsp;Record                                                                |<sub></sub>|
+|[`wasm`](#wasm)                                                 |WebAssembly&nbsp;Binary&nbsp;Format                                                                          |<sub></sub>|
+|`wav`                                                           |WAV&nbsp;file                                                                                                |<sub>`id3v2` `id3v1` `id3v11`</sub>|
+|`webp`                                                          |WebP&nbsp;image                                                                                              |<sub>`exif` `vp8_frame` `icc_profile` `xml`</sub>|
+|[`xml`](#xml)                                                   |Extensible&nbsp;Markup&nbsp;Language                                                                         |<sub></sub>|
+|`yaml`                                                          |YAML&nbsp;Ain't&nbsp;Markup&nbsp;Language                                                                    |<sub></sub>|
+|[`zip`](#zip)                                                   |ZIP&nbsp;archive                                                                                             |<sub>`probe`</sub>|
+|`image`                                                         |Group                                                                                                        |<sub>`gif` `jp2c` `jpeg` `mp4` `png` `tiff` `webp`</sub>|
+|`inet_packet`                                                   |Group                                                                                                        |<sub>`ipv4_packet` `ipv6_packet`</sub>|
+|`ip_packet`                                                     |Group                                                                                                        |<sub>`icmp` `icmpv6` `tcp_segment` `udp_datagram`</sub>|
+|`link_frame`                                                    |Group                                                                                                        |<sub>`bsd_loopback_frame` `ether8023_frame` `ipv4_packet` `ipv6_packet` `sll2_packet` `sll_packet`</sub>|
+|`mp3_frame_tags`                                                |Group                                                                                                        |<sub>`mp3_frame_vbri` `mp3_frame_xing`</sub>|
+|`probe`                                                         |Group                                                                                                        |<sub>`adts` `aiff` `apple_bookmark` `ar` `avi` `avro_ocf` `bitcoin_blkdat` `bplist` `bzip2` `caff` `elf` `fit` `flac` `gif` `gzip` `html` `jp2c` `jpeg` `json` `jsonl` `leveldb_table` `luajit` `macho` `macho_fat` `matroska` `midi` `moc3` `mp3` `mp4` `mpeg_ts` `nes` `ogg` `opentimestamps` `pcap` `pcapng` `png` `tar` `tiff` `toml` `tzif` `tzx` `wasm` `wav` `webp` `xml` `yaml` `zip`</sub>|
+|`tcp_stream`                                                    |Group                                                                                                        |<sub>`dns_tcp` `rtmp` `tls`</sub>|
+|`udp_payload`                                                   |Group                                                                                                        |<sub>`dns`</sub>|
 
 [#]: sh-end
 
@@ -147,6 +161,7 @@ fq -d bytes 'mp4({force: true})' file.mp4
 [fq -rn -L . 'include "formats"; formats_sections']: sh-start
 
 ## aac_frame
+Advanced Audio Coding frame.
 
 ### Options
 
@@ -167,12 +182,13 @@ Decode value as aac_frame
 ```
 
 ## apple_bookmark
+Apple BookmarkData.
 
 Apple's `bookmarkData` format is used to encode information that can be resolved
 into a `URL` object for a file even if the user moves or renames it. Can also
 contain security scoping information for App Sandbox support.
 
-These `bookmarkData` blobs are often found encoded in data fields of Binary
+These `bookmarkData` blobs are often found endcoded in data fields of Binary
 Property Lists. Notable examples include:
 
 - `com.apple.finder.plist` - contains an `FXRecentFolders` value, which is an
@@ -208,6 +224,7 @@ torepr' <sfl2 file>
 - https://michaellynn.github.io/2015/10/24/apples-bookmarkdata-exposed/
 
 ## asn1_ber
+ASN1 BER (basic encoding rules, also CER and DER).
 
 Supports decoding BER, CER and DER (X.690).
 
@@ -240,6 +257,7 @@ $ fq -d asn1_ber 'torepr as $r | ["version", "modulus", "private_exponent", "pri
 - https://lapo.it/asn1js/
 
 ## avc_au
+H.264/AVC Access Unit.
 
 ### Options
 
@@ -260,23 +278,25 @@ Decode value as avc_au
 ```
 
 ## avi
+Audio Video Interleaved.
 
 ### Options
 
-|Name            |Default|Description|
-|-               |-      |-|
-|`decode_samples`|true   |Decode samples|
+|Name                    |Default|Description|
+|-                       |-      |-|
+|`decode_extended_chunks`|true   |Decode extended chunks|
+|`decode_samples`        |true   |Decode samples|
 
 ### Examples
 
 Decode file using avi options
 ```
-$ fq -d avi -o decode_samples=true . file
+$ fq -d avi -o decode_extended_chunks=true -o decode_samples=true . file
 ```
 
 Decode value as avi
 ```
-... | avi({decode_samples:true})
+... | avi({decode_extended_chunks:true,decode_samples:true})
 ```
 
 ### Samples
@@ -294,12 +314,20 @@ $ fq '.streams[1].samples[] | tobytes' file.avi > stream01.mp3
 $ fq -o decode_samples=false '[.chunks[0] | grep_by(.id=="LIST" and .type=="strl") | grep_by(.id=="strh") as {$type} | grep_by(.id=="strf") as {$format_tag, $compression} | {$type,$format_tag,$compression}]' *.avi
 ```
 
+### Speed up decoding by disabling sample and extended chunks decoding
+
+If your not interested in sample details or extended chunks you can speed up decoding by using:
+```sh
+$ fq -o decode_samples=false -o decode_extended_chunks=false d file.avi
+```
+
 ### References
 
 - [AVI RIFF File Reference](https://learn.microsoft.com/en-us/windows/win32/directshow/avi-riff-file-reference)
 - [OpenDML AVI File Format Extensions](http://www.jmcgowan.com/odmlff2.pdf)
 
 ## avro_ocf
+Avro object container file.
 
 Supports reading Avro Object Container Format (OCF) files based on the 1.11.0 specification.
 
@@ -319,6 +347,7 @@ xentripetal@fastmail.com
 [@xentripetal](https://github.com/xentripetal)
 
 ## bencode
+BitTorrent bencoding.
 
 ### Convert represented value to JSON
 
@@ -330,6 +359,7 @@ $ fq -d bencode torepr file.torrent
 - https://wiki.theory.org/BitTorrentSpecification#Bencoding
 
 ## bitcoin_block
+Bitcoin block.
 
 ### Options
 
@@ -350,6 +380,7 @@ Decode value as bitcoin_block
 ```
 
 ## bits
+Raw bits.
 
 Decode to a slice and indexable binary of bits.
 
@@ -372,6 +403,7 @@ $ echo 'hello' | fq -c -d bits '[.[range(8)]]'
 ```
 
 ## bplist
+Apple Binary Property List.
 
 ### Show full decoding
 ```sh
@@ -436,6 +468,7 @@ bplist> from_ns_keyed_archiver(1)
 - https://opensource.apple.com/source/CF/CF-550/CFBinaryPList.c
 
 ## bson
+Binary JSON.
 
 ### Limitations
 
@@ -461,6 +494,7 @@ $ fq -d bson 'torepr | select(.name=="bob")' file.bson
 - https://bsonspec.org/spec.html
 
 ## bytes
+Raw bytes.
 
 Decode to a slice and indexable binary of bytes.
 
@@ -487,7 +521,32 @@ $ echo 'hello' | fq -d bytes '.[1]'
 101
 ```
 
+## caff
+Live2D Cubism archive.
+
+### Options
+
+|Name        |Default|Description|
+|-           |-      |-|
+|`uncompress`|true   |Uncompress and probe files|
+
+### Examples
+
+Decode file using caff options
+```
+$ fq -d caff -o uncompress=true . file
+```
+
+Decode value as caff
+```
+... | caff({uncompress:true})
+```
+
+### Authors
+- [@ronsor](https://github.com/ronsor)
+
 ## cbor
+Concise Binary Object Representation.
 
 ### Convert represented value to JSON
 
@@ -500,6 +559,7 @@ $ fq -d cbor torepr file.cbor
 - https://www.rfc-editor.org/rfc/rfc8949.html
 
 ## csv
+Comma separated values.
 
 ### Options
 
@@ -532,7 +592,31 @@ $ fq -d csv -o comma="\t" to_csv file.tsv
 $ fq -d csv '.[0] as $t | .[1:] | map(with_entries(.key = $t[.key]))' file.csv
 ```
 
+## fit
+Garmin Flexible and Interoperable Data Transfer.
+
+### Limitations
+
+- Fields with subcomponents, such as "compressed_speed_distance" field on globalMessageNumber 20 is not represented correctly. 
+  The field is read as 3 separate bytes where the first 12 bits are speed and the last 12 bits are distance.
+- There are still lots of UNKOWN fields due to gaps in Garmins SDK Profile documentation. (Currently FIT SDK 21.126)
+- Compressed timestamp messages are not accumulated against last known full timestamp.
+
+### Convert stream of data messages to JSON array
+
+```
+$ fq '[.data_records[] | select(.record_header.message_type == "data").data_message]' file.fit 
+```
+
+### Authors
+- Mikael Lofjärd mikael.lofjard@gmail.com, original author
+
+### References
+- https://developer.garmin.com/fit/protocol/
+- https://developer.garmin.com/fit/cookbook/decoding-activity-files/
+
 ## flac_frame
+FLAC frame.
 
 ### Options
 
@@ -553,6 +637,7 @@ Decode value as flac_frame
 ```
 
 ## hevc_au
+H.265/HEVC Access Unit.
 
 ### Options
 
@@ -573,6 +658,7 @@ Decode value as hevc_au
 ```
 
 ## html
+HyperText Markup Language.
 
 ### Options
 
@@ -655,7 +741,70 @@ $ fq -n -d html '[inputs | {key: input_filename, value: .html.head.title?}] | fr
 $ fq -r -o array=true -d html '.. | select(.[0] == "a" and .[1].href)?.[1].href' file.html
 ```
 
+## leveldb_descriptor
+LevelDB Descriptor.
+
+### Limitations
+
+- fragmented non-"full" records are not merged and decoded further.
+
+### Authors
+
+- [@mikez](https://github.com/mikez), original author
+
+### References
+
+- https://github.com/google/leveldb/blob/main/doc/impl.md#manifest
+- https://github.com/google/leveldb/blob/main/doc/log_format.md
+- https://github.com/google/leveldb/blob/main/db/version_edit.cc
+
+## leveldb_log
+LevelDB Log.
+
+### Limitations
+
+- fragmented non-"full" records are not merged and decoded further.
+
+### Authors
+
+- [@mikez](https://github.com/mikez), original author
+
+### References
+
+- https://github.com/google/leveldb/blob/main/doc/impl.md#log-files
+- https://github.com/google/leveldb/blob/main/doc/log_format.md
+- https://github.com/google/leveldb/blob/main/db/write_batch.cc
+
+## leveldb_table
+LevelDB Table.
+
+### Limitations
+
+- no Meta Blocks (like "filter") are decoded yet.
+- Zstandard uncompression is not implemented yet.
+
+### Authors
+
+- [@mikez](https://github.com/mikez), original author
+
+### References
+
+- https://github.com/google/leveldb/blob/main/doc/table_format.md
+- https://github.com/google/leveldb/blob/main/doc/impl.md
+- https://github.com/google/leveldb/blob/main/doc/index.md
+
+## luajit
+LuaJIT 2.0 bytecode.
+
+### Authors
+- [@dlatchx](https://github.com/dlatchx)
+
+### References
+- https://github.com/LuaJIT/LuaJIT/blob/v2.1/src/lj_bcdump.h
+- http://scm.zoomquiet.top/data/20131216145900/index.html
+
 ## macho
+Mach-O macOS executable.
 
 Supports decoding vanilla and FAT Mach-O binaries.
 
@@ -674,12 +823,14 @@ acils@itu.edu.tr
 [@Akaame](https://github.com/Akaame)
 
 ## markdown
+Markdown.
 
 ### Array with all level 1 and 2 headers
 ```sh
 $ fq -d markdown '[.. | select(.type=="heading" and .level<=2)?.children[0]]' file.md
 ```
 ## matroska
+Matroska file.
 
 ### Options
 
@@ -718,7 +869,55 @@ $ fq 'grep_by(.id == "Tracks") | matroska_path' file.mkv
 - https://www.matroska.org/technical/codec_specs.html
 - https://wiki.xiph.org/MatroskaOpus
 
+## midi
+Standard MIDI file.
+
+### Notes
+
+1. Only supports the MIDI 1.0 MIDI file specification.
+2. Only supports _MThd_ and _MTrk_ chunks.
+3. Does only basic validation on the MIDI data.
+
+### Sample queries
+
+1. Extract the track names from a MIDI file
+```
+fq -d midi -d midi '.. | select(.event=="track_name")? | "\(.track_name)"' midi/twinkle.mid 
+```
+
+2. Extract the tempo changes from a MIDI file
+```
+fq -d midi '.. | select(.event=="tempo")?.tempo' midi/twinkle.mid
+```
+
+3. Extract the key changes from a MIDI file
+```
+fq -d midi '.. | select(.event=="key_signature")?.key_signature' midi/twinkle.mid
+```
+
+4. Extract NoteOn events:
+```
+fq -d midi 'grep_by(.event=="note_on") | [.time.tick, .note_on.note] | join(" ")' midi/twinkle.mid
+```
+
+### Authors
+- [transcriptaze](https://github.com/transcriptaze)
+
+### References
+
+1. [The Complete MIDI 1.0 Detailed Specification](https://www.midi.org/specifications/item/the-midi-1-0-specification)
+2. [Standard MIDI Files](https://midi.org/standard-midi-files)
+3. [Standard MIDI File (SMF) Format](http://midi.teragonaudio.com/tech/midifile.htm)
+4. [MIDI Files Specification](http://www.somascape.org/midi/tech/mfile.html)
+
+## moc3
+MOC3 file.
+
+### Authors
+- [@ronsor](https://github.com/ronsor)
+
 ## mp3
+MP3 file.
 
 ### Options
 
@@ -741,6 +940,7 @@ Decode value as mp3
 ```
 
 ## mp4
+ISOBMFF, QuickTime and similar.
 
 ### Options
 
@@ -806,6 +1006,7 @@ $ fq 'grep_by(.type == "trak") | mp4_path' file.mp4
 - [Quicktime file format](https://developer.apple.com/standards/qtff-2001.pdf)
 
 ## msgpack
+MessagePack.
 
 ### Convert represented value to JSON
 
@@ -816,7 +1017,106 @@ $ fq -d msgpack torepr file.msgpack
 ### References
 - https://github.com/msgpack/msgpack/blob/master/spec.md
 
+## negentropy
+Negentropy message.
+
+### View a full Negentropy message
+
+```
+$ fq -d negentropy dd file
+```
+
+### Or from hex
+
+```
+$ echo '6186b7abb47c0001108e4206828ee3bf34258465809a337c6c00019a68e37b177a50b3ae7164ccc628b962020114019c1381281c9e3849d5fbd514b7bb65ad0101e601fbf7451f5d22e7fa36ae3e910e9f5215020157014a1b26853e06e9c32eb41b1df4f9ab300201e6011840e273c84bb1344f1d4e15d9aa67920200016f12ee2340888653f10b0ec2d438ac9f0101840156d2d796f4dff004ab369b9bcfa4d81e020187013f1b3c8a019800d5764e2de6bdfd2785020114017caaf0acb5dfe249aa0f7f742402168a01018301e7b8c4decb1eae455ca5714281e3245302017a01409c22636b097362df125ddffb6d944302015b01f332208bee82acf8ed922853ee54057f020001fc3e51fdb0b92966e38017f7959903850101cc01428ce0c96d49f15b50143e4fb228cb9300000131712d30e5296a7a45d07bba452d61cd' | fq -R 'from_hex | negentropy | dd'
+```
+
+### Check how many ranges the message has and how many of those are of 'fingerprint' mode
+
+```
+$ fq -d negentropy '.bounds | length as $total | map(select(.mode == "fingerprint")) | length | {$total, fingerprint: .}' message
+```
+
+### Check get all ids in all idlists
+
+```
+$ fq -d negentropy '.bounds | map(select(.mode == "idlist") | .idlist | .ids) | flatten' message
+```
+
+### Authors
+- fiatjaf, https://fiatjaf.com
+
+### References
+- https://github.com/hoytech/negentropy
+
+## nes
+iNES/NES 2.0 cartridge ROM format.
+
+### Limitations
+
+- `prg_rom`, `chr_rom` and `trainer` fields may contain data that is just random
+  junk from the memory chips, since they are of a fixed size.
+- The `nes_toasm` function outputs ALL opcodes, including the unofficial ones,
+  which means that none of the regular assemblers can recompile it.
+- The `nes_tokitty` function works on tiles in `chr_rom` but only outputs a Kitty
+  graphics compatible string. You need to manually `printf` that string to get
+  Kitty (or another compatible terminal) to output the graphics.
+
+### Decompile PRG ROM
+```
+$ fq -r '.prg_rom[] | nes_toasm' file.nes
+```
+
+### Print out first CHR ROM tile in Kitty (or Konsole, wayst, WezTerm) at size 5
+```
+$ printf $(fq -r -d nes '.chr_rom[0] | nes_tokitty(5)' file.nes)
+```
+
+### Print out all CHR ROM tiles in Kitty (with Bash) at size 5
+```
+$ for line in $(fq -r '.chr_rom[] | nes_tokitty(5)' file.nes);do printf "%b%s" "$line";done
+```
+
+### Authors
+- Mikael Lofjärd mikael.lofjard@gmail.com, original author
+
+### References
+- https://www.nesdev.org/wiki/INES
+- https://www.nesdev.org/wiki/NES_2.0
+- https://www.nesdev.org/wiki/CPU
+- https://bugzmanov.github.io/nes_ebook/chapter_6_3.html
+
+## opentimestamps
+OpenTimestamps file.
+
+### View a full OpenTimestamps file
+
+```
+$ fq dd file.ots
+```
+
+### List the names of the Calendar servers used
+
+```
+$ fq '.operations | map(select(.attestation_type == "calendar") | .url)' file.ots
+```
+
+### Check if there are Bitcoin attestations present
+
+```
+$ fq '.operations | map(select(.attestation_type == "bitcoin")) | length > 0' file.ots
+```
+
+### Authors
+- fiatjaf, https://fiatjaf.com
+
+### References
+- https://opentimestamps.org/
+- https://github.com/opentimestamps/python-opentimestamps
+
 ## pcap
+PCAP packet capture.
 
 ### Build object with number of (reassembled) TCP bytes sent to/from client IP
 ```sh
@@ -829,6 +1129,7 @@ $ fq '.tcp_connections | group_by(.client.ip) | map({key: .[0].client.ip, value:
 }
 ```
 ## pg_btree
+PostgreSQL btree index file.
 
 ### Options
 
@@ -868,6 +1169,7 @@ p.n.safonov@gmail.com
 ### References
 - https://www.postgresql.org/docs/current/storage-page-layout.html
 ## pg_control
+PostgreSQL control file.
 
 ### Options
 
@@ -907,6 +1209,7 @@ p.n.safonov@gmail.com
 ### References
 - https://github.com/postgres/postgres/blob/REL_14_2/src/include/catalog/pg_control.h
 ## pg_heap
+PostgreSQL heap file.
 
 ### Options
 
@@ -959,6 +1262,7 @@ p.n.safonov@gmail.com
 ### References
 - https://www.postgresql.org/docs/current/storage-page-layout.html
 ## protobuf
+Protobuf.
 
 ### Can decode sub messages
 
@@ -970,6 +1274,7 @@ $ fq -d protobuf '.fields[6].wire_value | protobuf | d' file
 - https://developers.google.com/protocol-buffers/docs/encoding
 
 ## rtmp
+Real-Time Messaging Protocol.
 
 Current only supports plain RTMP (not RTMPT or encrypted variants etc) with AMF0 (not AMF3).
 
@@ -982,7 +1287,37 @@ fq '.tcp_connections[] | select(.server.port=="rtmp") | d' file.cap
 - https://rtmp.veriskope.com/docs/spec/
 - https://rtmp.veriskope.com/pdf/video_file_format_spec_v10.pdf
 
+## tap
+TAP tape format for ZX Spectrum computers.
+
+The TAP- (and BLK-) format is nearly a direct copy of the data that is stored
+in real tapes, as it is written by the ROM save routine of the ZX-Spectrum.
+A TAP file is simply one data block or a group of 2 or more data blocks, one
+followed after the other. The TAP file may be empty.
+
+You will often find this format embedded inside the TZX tape format.
+
+The default file extension is `.tap`.
+
+### Processing JSON files
+
+When needing to process a generated JSON file it's recommended to convert the
+plain data bytes to an array by setting `bits_format=byte_array`:
+
+```bash
+fq -o bits_format=byte_array -d tap -V d /path/to/file.tap
+```
+
+### Authors
+
+- Michael R. Cook work.mrc@pm.me, original author
+
+### References
+
+- https://worldofspectrum.net/zx-modules/fileformats/tapformat.html
+
 ## tls
+Transport layer security.
 
 ### Options
 
@@ -1004,7 +1339,7 @@ Decode value as tls
 
 Supports decoding of most standard records, messages and extensions. Can also decrypt most standard cipher suits in a PCAP with traffic in both directions if a NSS key log is provided.
 
-### Decode and decrypt providing a PCAP and key log
+### Decode and decrypt provding a PCAP and key log
 
 Write traffic to a PCAP file:
 
@@ -1130,6 +1465,7 @@ $ fq -o keylog=@traffic.keylog  'first(grep_by(.server.stream | format == "tls")
 - [RFC 6101: The Secure Sockets Layer (SSL) Protocol Version 3.0](https://www.rfc-editor.org/rfc/rfc)
 
 ## tzif
+Time Zone Information Format.
 
 ### Get last transition time
 ```sh
@@ -1149,7 +1485,38 @@ fq '.v2plusdatablock.leap_second_records | length' tziffile
 ### References
 - https://datatracker.ietf.org/doc/html/rfc8536
 
+## tzx
+TZX tape format for ZX Spectrum computers.
+
+`TZX` is a file format designed to preserve cassette tapes compatible with the
+ZX Spectrum computers, although some specialized versions of the format have
+been defined for other machines such as the Amstrad CPC and C64.
+
+The format was originally created by Tomaz Kac, who was maintainer until
+`revision 1.13`, before passing it to Martijn v.d. Heide. For a brief period
+the company Ramsoft became the maintainers, and created revision `v1.20`.
+
+The default file extension is `.tzx`.
+
+### Processing JSON files
+
+When needing to process a generated JSON file it's recommended to convert the
+plain data bytes to an array by setting `bits_format=byte_array`:
+
+```bash
+fq -o bits_format=byte_array -d tzx -V d /path/to/file.tzx
+```
+
+### Authors
+
+- Michael R. Cook work.mrc@pm.me, original author
+
+### References
+
+- https://worldofspectrum.net/TZXformat.html
+
 ## wasm
+WebAssembly Binary Format.
 
 ### Count opcode usage
 ```sh
@@ -1170,6 +1537,7 @@ $ fq '.sections | {import: map(select(.id == "import_section").content.im.x[].nm
 - https://webassembly.github.io/spec/core/
 
 ## xml
+Extensible Markup Language.
 
 ### Options
 
@@ -1298,6 +1666,7 @@ $ echo '<a><b/><b>bbb</b><c attr="value">ccc</c></a>' | fq -o array=true '.[2][2
 - [xml.com's Converting Between XML and JSON](https://www.xml.com/pub/a/2006/05/31/converting-between-xml-and-json.html)
 
 ## zip
+ZIP archive.
 
 ### Options
 
@@ -1319,9 +1688,15 @@ Decode value as zip
 
 Supports ZIP64.
 
+## Timestamp and time zones
+
+The timestamp accessed via `.local_files[].last_modification` is encoded in ZIP files using [MS-DOS representation](https://learn.microsoft.com/en-us/windows/win32/api/oleauto/nf-oleauto-dosdatetimetovarianttime) which lacks a known time zone. Probably the local time/date was used at creation. The `unix_guess` field in `last_modification` is a guess assuming the local time zone was UTC at creation.
+
 ### References
 - https://pkware.cachefly.net/webdocs/casestudies/APPNOTE.TXT
 - https://opensource.apple.com/source/zip/zip-6/unzip/unzip/proginfo/extra.fld
+- https://formats.kaitai.io/dos_datetime/
+- https://learn.microsoft.com/en-us/windows/win32/api/oleauto/nf-oleauto-dosdatetimetovarianttime
 
 
 [#]: sh-end

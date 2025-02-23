@@ -14,6 +14,7 @@ package matroska
 import (
 	"embed"
 	"fmt"
+	"time"
 
 	"github.com/wader/fq/format"
 	"github.com/wader/fq/format/matroska/ebml"
@@ -117,6 +118,8 @@ var lacingTypeNames = scalar.UintMapSymStr{
 
 const tagSizeUnknown = 0xffffffffffffff
 
+var sintActualMatroskaEpochDescription = scalar.SintActualDateDescription(ebml.EpochDate, time.Nanosecond, time.RFC3339)
+
 func decodeLacingFn(d *decode.D, lacingType int, fn func(d *decode.D)) {
 	if lacingType == lacingTypeNone {
 		fn(d)
@@ -130,7 +133,7 @@ func decodeLacingFn(d *decode.D, lacingType int, fn func(d *decode.D)) {
 	case lacingTypeXiph:
 		numLaces := int(d.FieldU8("num_laces"))
 		d.FieldArray("lace_sizes", func(d *decode.D) {
-			for i := 0; i < numLaces; i++ {
+			for range numLaces {
 				s := int64(d.FieldUintFn("lace_size", decodeXiphLaceSize))
 				laceSizes = append(laceSizes, s)
 			}
@@ -141,7 +144,7 @@ func decodeLacingFn(d *decode.D, lacingType int, fn func(d *decode.D)) {
 		d.FieldArray("lace_sizes", func(d *decode.D) {
 			s := int64(d.FieldUintFn("lace_size", decodeVint)) // first is unsigned, not ranged shifted
 			laceSizes = append(laceSizes, s)
-			for i := 0; i < numLaces-1; i++ {
+			for range numLaces - 1 {
 				d := int64(d.FieldUintFn("lace_size_delta", decodeRawVint))
 				// range shifting
 				switch {
@@ -175,7 +178,7 @@ func decodeLacingFn(d *decode.D, lacingType int, fn func(d *decode.D)) {
 	case lacingTypeFixed:
 		numLaces := int(d.FieldU8("num_laces"))
 		fixedSize := (d.BitsLeft() / 8) / int64(numLaces+1)
-		for i := 0; i < numLaces+1; i++ {
+		for range numLaces + 1 {
 			laceSizes = append(laceSizes, fixedSize)
 		}
 	default:
@@ -383,28 +386,14 @@ func decodeMaster(d *decode.D, bitsLimit int64, elm *ebml.Master, unknownSize bo
 				case *ebml.UTF8:
 					d.FieldUTF8NullFixedLen("value", int(tagSize))
 				case *ebml.Date:
-					// TODO:
-					/*
-						proc type_date {size label _extra} {
-						    set s [clock scan {2001-01-01 00:00:00}]
-						    set frac 0
-						    switch $size {
-						        0 {}
-						        8 {
-						            set nano [int64]
-						            set s [clock add $s [expr $nano/1000000000] seconds]
-						            set frac [expr ($nano%1000000000)/1000000000.0]
-						        }
-						        default {
-						            bytes $size $label
-						            return
-						        }
-						    }
-
-						    entry $label "[clock format $s] ${frac}s" $size [expr [pos]-$size]
-						}
-					*/
-					d.FieldRawLen("value", int64(tagSize)*8)
+					switch tagSize {
+					case 0:
+						d.FieldValueSint("value", 0, sintActualMatroskaEpochDescription)
+					case 8:
+						d.FieldS("value", int(tagSize)*8, sintActualMatroskaEpochDescription)
+					default:
+						d.FieldRawLen("value", int64(tagSize)*8)
+					}
 				case *ebml.Binary:
 					switch tagID {
 					case ebml_matroska.SimpleBlockID:
@@ -481,8 +470,7 @@ func matroskaDecode(d *decode.D) any {
 			if !ok {
 				panic(fmt.Sprintf("expected mpegASCOut got %#+v", v))
 			}
-			//nolint:gosimple
-			t.formatInArg = format.AAC_Frame_In{ObjectType: mpegASCOut.ObjectType}
+			t.formatInArg = format.AAC_Frame_In(mpegASCOut)
 		case "A_OPUS":
 			t.parentD.FieldFormatRange("value", t.codecPrivatePos, t.codecPrivateTagSize, &opusPacketFrameGroup, nil)
 		case "A_FLAC":
@@ -505,14 +493,14 @@ func matroskaDecode(d *decode.D) any {
 			if !ok {
 				panic(fmt.Sprintf("expected AvcDcrOut got %#+v", v))
 			}
-			t.formatInArg = format.AVC_AU_In{LengthSize: avcDcrOut.LengthSize} //nolint:gosimple
+			t.formatInArg = format.AVC_AU_In(avcDcrOut)
 		case "V_MPEGH/ISO/HEVC":
 			_, v := t.parentD.FieldFormatRange("value", t.codecPrivatePos, t.codecPrivateTagSize, &mpegHEVCDCRGroup, nil)
 			hevcDcrOut, ok := v.(format.HEVC_DCR_Out)
 			if !ok {
 				panic(fmt.Sprintf("expected HevcDcrOut got %#+v", v))
 			}
-			t.formatInArg = format.HEVC_AU_In{LengthSize: hevcDcrOut.LengthSize} //nolint:gosimple
+			t.formatInArg = format.HEVC_AU_In(hevcDcrOut)
 		case "V_AV1":
 			t.parentD.FieldFormatRange("value", t.codecPrivatePos, t.codecPrivateTagSize, &av1CCRGroup, nil)
 		case "V_VP9":

@@ -16,19 +16,19 @@ import (
 	"html"
 	"io"
 	"regexp"
+	"slices"
 	"strconv"
 	"strings"
 	"unicode/utf8"
 
 	"github.com/wader/fq/format"
-	"github.com/wader/fq/internal/gojqex"
-	"github.com/wader/fq/internal/sortex"
-	"github.com/wader/fq/internal/stringsex"
+	"github.com/wader/fq/internal/gojqx"
+	"github.com/wader/fq/internal/sortx"
+	"github.com/wader/fq/internal/stringsx"
 	"github.com/wader/fq/pkg/bitio"
 	"github.com/wader/fq/pkg/decode"
 	"github.com/wader/fq/pkg/interp"
 	"github.com/wader/fq/pkg/scalar"
-	"golang.org/x/exp/slices"
 )
 
 //go:embed xml.jq
@@ -104,9 +104,9 @@ func (nss xmlNNStack) lookup(name xml.Name) string {
 }
 
 func (nss xmlNNStack) push(name string, url string) xmlNNStack {
-	n := append([]xmlNS{}, nss...)
+	n := slices.Clone(nss)
 	n = append(n, xmlNS{name: name, url: url})
-	return xmlNNStack(n)
+	return n
 }
 
 func elmName(space, local string) string {
@@ -288,7 +288,6 @@ func decodeXML(d *decode.D) any {
 
 	bbr := d.RawLen(d.Len())
 	var r any
-	var err error
 
 	br := bitio.NewIOReadSeeker(bbr)
 
@@ -309,9 +308,6 @@ func decodeXML(d *decode.D) any {
 		r = fromXMLToArray(n)
 	} else {
 		r = fromXMLToObject(n, xi)
-	}
-	if err != nil {
-		d.Fatalf("%s", err)
 	}
 	var s scalar.Any
 	s.Actual = r
@@ -334,7 +330,7 @@ func decodeXML(d *decode.D) any {
 		switch t := t.(type) {
 		case xml.CharData:
 			if !whitespaceRE.Match([]byte(t)) {
-				d.Fatalf("root element has trailing non-whitespace %q", stringsex.TrimN(string(t), 50, "..."))
+				d.Fatalf("root element has trailing non-whitespace %q", stringsx.TrimN(string(t), 50, "..."))
 			}
 			// ignore trailing whitespace
 		case xml.ProcInst:
@@ -356,14 +352,14 @@ func xmlNameFromStr(s string) xml.Name {
 	return xml.Name{Local: s}
 }
 
-func xmlNameSort(a, b xml.Name) bool {
+func xmlNameSort(a, b xml.Name) int {
 	if a.Space != b.Space {
 		if a.Space == "" {
-			return true
+			return 1
 		}
-		return a.Space < b.Space
+		return strings.Compare(a.Space, b.Space)
 	}
-	return a.Local < b.Local
+	return strings.Compare(a.Local, b.Local)
 }
 
 type ToXMLOpts struct {
@@ -392,7 +388,8 @@ func toXMLFromObject(c any, opts ToXMLOpts) any {
 				switch {
 				case k == "#seq":
 					hasSeq = true
-					seq, _ = strconv.Atoi(v.(string))
+					s, _ := v.(string)
+					seq, _ = strconv.Atoi(s)
 				case k == "#text":
 					s, _ := v.(string)
 					n.Chardata = []byte(s)
@@ -437,12 +434,12 @@ func toXMLFromObject(c any, opts ToXMLOpts) any {
 
 		// if one #seq was found, assume all have them, otherwise sort by name
 		if orderHasSeq {
-			sortex.ProxySort(orderSeqs, n.Nodes, func(a, b int) bool { return a < b })
+			sortx.ProxySort(orderSeqs, n.Nodes, func(a, b int) bool { return a < b })
 		} else {
-			sortex.ProxySort(orderNames, n.Nodes, func(a, b string) bool { return a < b })
+			sortx.ProxySort(orderNames, n.Nodes, func(a, b string) bool { return a < b })
 		}
 
-		slices.SortFunc(n.Attrs, func(a, b xml.Attr) bool { return xmlNameSort(a.Name, b.Name) })
+		slices.SortFunc(n.Attrs, func(a, b xml.Attr) int { return xmlNameSort(a.Name, b.Name) })
 
 		return n, seq, hasSeq
 	}
@@ -515,7 +512,7 @@ func toXMLFromArray(c any, opts ToXMLOpts) any {
 			}
 		}
 
-		slices.SortFunc(n.Attrs, func(a, b xml.Attr) bool { return xmlNameSort(a.Name, b.Name) })
+		slices.SortFunc(n.Attrs, func(a, b xml.Attr) int { return xmlNameSort(a.Name, b.Name) })
 
 		for _, c := range children {
 			c, ok := c.([]any)
@@ -532,12 +529,12 @@ func toXMLFromArray(c any, opts ToXMLOpts) any {
 
 	ca, ok := c.([]any)
 	if !ok {
-		return gojqex.FuncTypeError{Name: "to_xml", V: c}
+		return gojqx.FuncTypeError{Name: "to_xml", V: c}
 	}
 	n, ok := f(ca)
 	if !ok {
 		// TODO: better error
-		return gojqex.FuncTypeError{Name: "to_xml", V: c}
+		return gojqx.FuncTypeError{Name: "to_xml", V: c}
 	}
 	bb := &bytes.Buffer{}
 	e := xml.NewEncoder(bb)
@@ -553,10 +550,10 @@ func toXMLFromArray(c any, opts ToXMLOpts) any {
 }
 
 func toXML(_ *interp.Interp, c any, opts ToXMLOpts) any {
-	if v, ok := gojqex.Cast[map[string]any](c); ok {
-		return toXMLFromObject(gojqex.NormalizeToStrings(v), opts)
-	} else if v, ok := gojqex.Cast[[]any](c); ok {
-		return toXMLFromArray(gojqex.NormalizeToStrings(v), opts)
+	if v, ok := gojqx.Cast[map[string]any](c); ok {
+		return toXMLFromObject(gojqx.NormalizeToStrings(v), opts)
+	} else if v, ok := gojqx.Cast[[]any](c); ok {
+		return toXMLFromArray(gojqx.NormalizeToStrings(v), opts)
 	}
-	return gojqex.FuncTypeError{Name: "to_xml", V: c}
+	return gojqx.FuncTypeError{Name: "to_xml", V: c}
 }

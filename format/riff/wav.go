@@ -59,7 +59,7 @@ func wavDecode(d *decode.D) any {
 		d,
 		nil,
 		func(d *decode.D, path path) (string, int64) {
-			id := d.FieldUTF8("id", 4, chunkIDDescriptions)
+			id := d.FieldUTF8("id", 4, scalar.ActualTrimSpace, chunkIDDescriptions)
 
 			const restOfFileLen = 0xffffffff
 			size := int64(d.FieldScalarUintFn("size", func(d *decode.D) scalar.Uint {
@@ -86,7 +86,7 @@ func wavDecode(d *decode.D) any {
 				d.FieldUTF8("type", 4)
 				return true, nil
 
-			case "fmt ":
+			case "fmt":
 				audioFormat := d.FieldU16("audio_format", format.WAVTagNames)
 				d.FieldU16("num_channels")
 				d.FieldU32("sample_rate")
@@ -94,12 +94,18 @@ func wavDecode(d *decode.D) any {
 				d.FieldU16("block_align")
 				d.FieldU16("bits_per_sample")
 
-				if audioFormat == formatExtensible && d.BitsLeft() > 0 {
-					d.FieldU16("extension_size")
-					d.FieldU16("valid_bits_per_sample")
-					d.FieldU32("channel_mask")
-					d.FieldRawLen("sub_format", 16*8, subFormatNames)
+				if d.BitsLeft() > 0 {
+					if audioFormat == formatExtensible {
+						d.FieldU16("extension_size")
+						d.FieldU16("valid_bits_per_sample")
+						d.FieldU32("channel_mask")
+						d.FieldRawLen("sub_format", 16*8, subFormatNames)
+					} else {
+						cbSize := d.FieldU16("cb_size")
+						d.FieldRawLen("unknown", int64(cbSize)*8)
+					}
 				}
+
 				return false, nil
 
 			case "data":
@@ -121,7 +127,7 @@ func wavDecode(d *decode.D) any {
 				numSampleLoops := int(d.FieldU32("number_of_sample_loops"))
 				samplerDataBytes := int(d.FieldU32("sampler_data_bytes"))
 				d.FieldArray("samples_loops", func(d *decode.D) {
-					for i := 0; i < numSampleLoops; i++ {
+					for range numSampleLoops {
 						d.FieldStruct("sample_loop", func(d *decode.D) {
 							d.FieldUTF8("id", 4)
 							d.FieldU32("type", scalar.UintMapSymStr{
@@ -137,6 +143,25 @@ func wavDecode(d *decode.D) any {
 					}
 				})
 				d.FieldRawLen("sampler_data", int64(samplerDataBytes)*8)
+				return false, nil
+
+			case "bext":
+				d.FieldUTF8NullFixedLen("description", 256)
+				d.FieldUTF8NullFixedLen("originator", 32)
+				d.FieldUTF8NullFixedLen("originator_reference", 32)
+				d.FieldUTF8NullFixedLen("originator_date", 10)
+				d.FieldUTF8NullFixedLen("originator_time", 8)
+				d.FieldU32("time_reference_low")
+				d.FieldU32("time_reference_high")
+				d.FieldU16("version")
+				d.FieldRawLen("umid", 64*8)
+				d.FieldU16("loudness_value")
+				d.FieldU16("loudness_range")
+				d.FieldU16("max_true_peak_level")
+				d.FieldU16("max_momentary_loudness")
+				d.FieldU16("max_short_term_loudness")
+				d.FieldRawLen("reserved", 180*8)
+				d.FieldRawLen("coding_history", d.BitsLeft())
 				return false, nil
 
 			default:

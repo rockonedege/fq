@@ -9,8 +9,8 @@ import (
 	"reflect"
 	"regexp"
 
-	"github.com/wader/fq/internal/bitioex"
-	"github.com/wader/fq/internal/ioex"
+	"github.com/wader/fq/internal/bitiox"
+	"github.com/wader/fq/internal/iox"
 	"github.com/wader/fq/internal/recoverfn"
 	"github.com/wader/fq/pkg/bitio"
 	"github.com/wader/fq/pkg/ranges"
@@ -46,7 +46,7 @@ func Decode(ctx context.Context, br bitio.ReaderAtSeeker, group *Group, opts Opt
 }
 
 func decode(ctx context.Context, br bitio.ReaderAtSeeker, group *Group, opts Options) (*Value, any, error) {
-	brLen, err := bitioex.Len(br)
+	brLen, err := bitiox.Len(br)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -99,7 +99,7 @@ func decode(ctx context.Context, br bitio.ReaderAtSeeker, group *Group, opts Opt
 			inArgs = append(inArgs, groupArg)
 		}
 
-		cBR, err := bitioex.Range(br, decodeRange.Start, decodeRange.Len)
+		cBR, err := bitiox.Range(br, decodeRange.Start, decodeRange.Len)
 		if err != nil {
 			return nil, nil, IOError{Err: err, Op: "BitBufRange", ReadSize: decodeRange.Len, Pos: decodeRange.Start}
 		}
@@ -226,7 +226,7 @@ func (d *D) ArgAs(target any) bool {
 	for _, in := range d.inArgs {
 		// target will be &format.<Format>In
 		// in format.<Format>In so have to get ptr type
-		inType := reflect.PtrTo(reflect.TypeOf(in))
+		inType := reflect.PointerTo(reflect.TypeOf(in))
 		if inType.AssignableTo(targeType) {
 			targetVal := reflect.ValueOf(target)
 			targetVal.Elem().Set(reflect.ValueOf(in))
@@ -257,13 +257,13 @@ func (d *D) fieldDecoder(name string, bitBuf bitio.ReaderAtSeeker, v any) *D {
 func (d *D) TryCopyBits(w io.Writer, r bitio.Reader) (int64, error) {
 	// TODO: what size? now same as io.Copy
 	buf := d.SharedReadBuf(32 * 1024)
-	return bitioex.CopyBitsBuffer(w, r, buf)
+	return bitiox.CopyBitsBuffer(w, r, buf)
 }
 
 func (d *D) CopyBits(w io.Writer, r bitio.Reader) int64 {
 	n, err := d.TryCopyBits(w, r)
 	if err != nil {
-		d.IOPanic(err, "CopyBits: Copy")
+		d.IOPanic(err, "", "CopyBits")
 	}
 	return n
 }
@@ -277,7 +277,7 @@ func (d *D) TryCopy(w io.Writer, r io.Reader) (int64, error) {
 func (d *D) Copy(w io.Writer, r io.Reader) int64 {
 	n, err := d.TryCopy(w, r)
 	if err != nil {
-		d.IOPanic(err, "Copy")
+		d.IOPanic(err, "", "Copy")
 	}
 	return n
 }
@@ -285,7 +285,7 @@ func (d *D) Copy(w io.Writer, r io.Reader) int64 {
 func (d *D) CloneReadSeeker(br bitio.ReadSeeker) bitio.ReadSeeker {
 	br, err := bitio.CloneReadSeeker(br)
 	if err != nil {
-		d.IOPanic(err, "CloneReadSeeker")
+		d.IOPanic(err, "", "CloneReadSeeker")
 	}
 	return br
 }
@@ -299,7 +299,7 @@ func (d *D) NewBitBufFromReader(r io.Reader) bitio.ReaderAtSeeker {
 func (d *D) TryReadAllBits(r bitio.Reader) ([]byte, error) {
 	bb := &bytes.Buffer{}
 	buf := d.SharedReadBuf(32 * 1024)
-	if _, err := bitioex.CopyBitsBuffer(bb, r, buf); err != nil {
+	if _, err := bitiox.CopyBitsBuffer(bb, r, buf); err != nil {
 		return nil, err
 	}
 	return bb.Bytes(), nil
@@ -308,7 +308,7 @@ func (d *D) TryReadAllBits(r bitio.Reader) ([]byte, error) {
 func (d *D) ReadAllBits(r bitio.Reader) []byte {
 	buf, err := d.TryReadAllBits(r)
 	if err != nil {
-		d.IOPanic(err, "Bytes ReadAllBytes")
+		d.IOPanic(err, "", "ReadAllBytes")
 	}
 	return buf
 }
@@ -348,16 +348,16 @@ func (d *D) FillGaps(r ranges.Range, namePrefix string) {
 
 	gaps := ranges.Gaps(r, valueRanges)
 	for i, gap := range gaps {
-		br, err := bitioex.Range(d.bitBuf, gap.Start, gap.Len)
+		br, err := bitiox.Range(d.bitBuf, gap.Start, gap.Len)
 		if err != nil {
-			d.IOPanic(err, "FillGaps: Range")
+			d.IOPanic(err, namePrefix, "bitiox.Range")
 		}
 
 		v := &Value{
 			Name: fmt.Sprintf("%s%d", namePrefix, i),
 			V: &scalar.BitBuf{
 				Actual: br,
-				Gap:    true,
+				Flags:  scalar.FlagGap,
 			},
 			RootReader: d.bitBuf,
 			Range:      gap,
@@ -380,8 +380,8 @@ func (d *D) Fatalf(format string, a ...any) {
 	panic(DecoderError{Reason: fmt.Sprintf(format, a...), Pos: d.Pos()})
 }
 
-func (d *D) IOPanic(err error, op string) {
-	panic(IOError{Err: err, Pos: d.Pos(), Op: op})
+func (d *D) IOPanic(err error, name string, op string) {
+	panic(IOError{Err: err, Name: name, Pos: d.Pos(), Op: op})
 }
 
 // TryBits reads nBits bits from buffer
@@ -543,7 +543,7 @@ func (d *D) TryPeekFind(nBits int, seekBits int64, maxLen int64, fn func(v uint6
 func (d *D) PeekFind(nBits int, seekBits int64, maxLen int64, fn func(v uint64) bool) (int64, uint64) {
 	peekBits, v, err := d.TryPeekFind(nBits, seekBits, maxLen, fn)
 	if err != nil {
-		d.IOPanic(err, "PeekFind: TryPeekFind")
+		d.IOPanic(err, "", "PeekFind")
 	}
 	if peekBits == -1 {
 		d.Errorf("peek not found")
@@ -590,11 +590,11 @@ func (d *D) BytesLen(nBytes int) []byte {
 
 // TODO: rename/remove BitBuf name?
 func (d *D) TryBitBufRange(firstBit int64, nBits int64) (bitio.ReaderAtSeeker, error) {
-	return bitioex.Range(d.bitBuf, firstBit, nBits)
+	return bitiox.Range(d.bitBuf, firstBit, nBits)
 }
 
 func (d *D) BitBufRange(firstBit int64, nBits int64) bitio.ReaderAtSeeker {
-	br, err := bitioex.Range(d.bitBuf, firstBit, nBits)
+	br, err := bitiox.Range(d.bitBuf, firstBit, nBits)
 	if err != nil {
 		panic(IOError{Err: err, Op: "BitBufRange", ReadSize: nBits, Pos: firstBit})
 	}
@@ -614,7 +614,7 @@ func (d *D) Pos() int64 {
 }
 
 func (d *D) TryLen() (int64, error) {
-	return bitioex.Len(d.bitBuf)
+	return bitiox.Len(d.bitBuf)
 }
 
 func (d *D) Len() int64 {
@@ -771,7 +771,7 @@ func (d *D) TrySeekRel(delta int64, fns ...func(d *D)) (int64, error) {
 func (d *D) SeekRel(delta int64, fns ...func(d *D)) int64 {
 	n, err := d.trySeekAbs(d.Pos()+delta, fns...)
 	if err != nil {
-		d.IOPanic(err, "SeekRel")
+		d.IOPanic(err, "", "SeekRel")
 	}
 	return n
 }
@@ -785,7 +785,7 @@ func (d *D) TrySeekAbs(pos int64, fns ...func(d *D)) (int64, error) {
 func (d *D) SeekAbs(pos int64, fns ...func(d *D)) int64 {
 	n, err := d.trySeekAbs(pos, fns...)
 	if err != nil {
-		d.IOPanic(err, "SeekAbs")
+		d.IOPanic(err, "", "SeekAbs")
 	}
 	return n
 }
@@ -938,7 +938,7 @@ func (d *D) FramedFn(nBits int64, fn func(d *D)) int64 {
 	return decodeLen
 }
 
-// LimitedFn decode from current position nBits forward. When done position will after last bit decoded.
+// LimitedFn decode from current position nBits forward. When done position will be after last bit decoded.
 func (d *D) LimitedFn(nBits int64, fn func(d *D)) int64 {
 	if nBits < 0 {
 		d.Fatalf("%d nBits < 0", nBits)
@@ -955,7 +955,7 @@ func (d *D) RangeFn(firstBit int64, nBits int64, fn func(d *D)) int64 {
 	// TODO: do some kind of DecodeLimitedLen/RangeFn?
 	br := d.BitBufRange(0, firstBit+nBits)
 	if _, err := br.SeekBits(firstBit, io.SeekStart); err != nil {
-		d.IOPanic(err, "RangeFn: SeekAbs")
+		d.IOPanic(err, "", "RangeFn: SeekAbs")
 	}
 
 	nd := *d
@@ -979,7 +979,7 @@ func (d *D) Format(group *Group, inArg any) any {
 		ReadBuf:     d.readBuf,
 	})
 	if dv == nil || dv.Errors() != nil {
-		d.IOPanic(err, "Format: decode")
+		d.IOPanic(err, "", "Format: decode")
 	}
 
 	switch vv := dv.V.(type) {
@@ -992,7 +992,7 @@ func (d *D) Format(group *Group, inArg any) any {
 	}
 
 	if _, err := d.bitBuf.SeekBits(dv.Range.Len, io.SeekCurrent); err != nil {
-		d.IOPanic(err, "Format: SeekRel")
+		d.IOPanic(err, "", "Format: SeekRel")
 	}
 
 	return v
@@ -1015,7 +1015,7 @@ func (d *D) TryFieldFormat(name string, group *Group, inArg any) (*Value, any, e
 
 	d.AddChild(dv)
 	if _, err := d.bitBuf.SeekBits(dv.Range.Len, io.SeekCurrent); err != nil {
-		d.IOPanic(err, "TryFieldFormat: SeekRel")
+		d.IOPanic(err, name, "TryFieldFormat: SeekRel")
 	}
 
 	return dv, v, err
@@ -1024,7 +1024,7 @@ func (d *D) TryFieldFormat(name string, group *Group, inArg any) (*Value, any, e
 func (d *D) FieldFormat(name string, group *Group, inArg any) (*Value, any) {
 	dv, v, err := d.TryFieldFormat(name, group, inArg)
 	if dv == nil || dv.Errors() != nil {
-		d.IOPanic(err, "FieldFormat: TryFieldFormat")
+		d.IOPanic(err, name, "FieldFormat: TryFieldFormat")
 	}
 	return dv, v
 }
@@ -1054,7 +1054,7 @@ func (d *D) TryFieldFormatLen(name string, nBits int64, group *Group, inArg any)
 
 	d.AddChild(dv)
 	if _, err := d.bitBuf.SeekBits(nBits, io.SeekCurrent); err != nil {
-		d.IOPanic(err, "TryFieldFormatLen: SeekRel")
+		d.IOPanic(err, name, "TryFieldFormatLen: SeekRel")
 	}
 
 	return dv, v, err
@@ -1063,7 +1063,7 @@ func (d *D) TryFieldFormatLen(name string, nBits int64, group *Group, inArg any)
 func (d *D) FieldFormatLen(name string, nBits int64, group *Group, inArg any) (*Value, any) {
 	dv, v, err := d.TryFieldFormatLen(name, nBits, group, inArg)
 	if dv == nil || dv.Errors() != nil {
-		d.IOPanic(err, "FieldFormatLen: TryFieldFormatLen")
+		d.IOPanic(err, name, "FieldFormatLen: TryFieldFormatLen")
 	}
 	return dv, v
 }
@@ -1100,7 +1100,7 @@ func (d *D) TryFieldFormatRange(name string, firstBit int64, nBits int64, group 
 func (d *D) FieldFormatRange(name string, firstBit int64, nBits int64, group *Group, inArg any) (*Value, any) {
 	dv, v, err := d.TryFieldFormatRange(name, firstBit, nBits, group, inArg)
 	if dv == nil || dv.Errors() != nil {
-		d.IOPanic(err, "FieldFormatRange: TryFieldFormatRange")
+		d.IOPanic(err, name, "FieldFormatRange: TryFieldFormatRange")
 	}
 
 	return dv, v
@@ -1130,7 +1130,7 @@ func (d *D) TryFieldFormatBitBuf(name string, br bitio.ReaderAtSeeker, group *Gr
 func (d *D) FieldFormatBitBuf(name string, br bitio.ReaderAtSeeker, group *Group, inArg any) (*Value, any) {
 	dv, v, err := d.TryFieldFormatBitBuf(name, br, group, inArg)
 	if dv == nil || dv.Errors() != nil {
-		d.IOPanic(err, "FieldFormatBitBuf: TryFieldFormatBitBuf")
+		d.IOPanic(err, name, "FieldFormatBitBuf: TryFieldFormatBitBuf")
 	}
 
 	return dv, v
@@ -1139,9 +1139,9 @@ func (d *D) FieldFormatBitBuf(name string, br bitio.ReaderAtSeeker, group *Group
 // TODO: rethink these
 
 func (d *D) FieldRootBitBuf(name string, br bitio.ReaderAtSeeker, sms ...scalar.BitBufMapper) *Value {
-	brLen, err := bitioex.Len(br)
+	brLen, err := bitiox.Len(br)
 	if err != nil {
-		d.IOPanic(err, "br Len")
+		d.IOPanic(err, name, "br Len")
 	}
 
 	v := &Value{}
@@ -1188,24 +1188,24 @@ func (d *D) FieldStructRootBitBufFn(name string, br bitio.ReaderAtSeeker, fn fun
 func (d *D) FieldFormatReaderLen(name string, nBits int64, fn func(r io.Reader) (io.ReadCloser, error), group *Group) (*Value, any) {
 	br, err := d.TryBitBufLen(nBits)
 	if err != nil {
-		d.IOPanic(err, "FieldFormatReaderLen: BitBufLen")
+		d.IOPanic(err, name, "FieldFormatReaderLen: BitBufLen")
 	}
 
 	bbBR := bitio.NewIOReader(br)
 	r, err := fn(bbBR)
 	if err != nil {
-		d.IOPanic(err, "FieldFormatReaderLen: fn")
+		d.IOPanic(err, name, "FieldFormatReaderLen: fn")
 	}
 	rBuf, err := io.ReadAll(r)
 	if err != nil {
-		d.IOPanic(err, "FieldFormatReaderLen: ReadAll")
+		d.IOPanic(err, name, "FieldFormatReaderLen: ReadAll")
 	}
 	rBR := bitio.NewBitReader(rBuf, -1)
 
 	return d.FieldFormatBitBuf(name, rBR, group, nil)
 }
 
-// TODO: too mant return values
+// TODO: too many return values
 func (d *D) TryFieldReaderRangeFormat(name string, startBit int64, nBits int64, fn func(r io.Reader) io.Reader, group *Group, inArg any) (int64, bitio.ReaderAtSeeker, *Value, any, error) {
 	bitLen := nBits
 	if bitLen == -1 {
@@ -1225,15 +1225,27 @@ func (d *D) TryFieldReaderRangeFormat(name string, startBit int64, nBits int64, 
 	if err != nil {
 		return 0, nil, nil, nil, err
 	}
-	dv, v, err := d.TryFieldFormatBitBuf(name, rbr, group, inArg)
 
-	return cz * 8, rbr, dv, v, err
+	if group != nil {
+		dv, v, err := d.TryFieldFormatBitBuf(name, rbr, group, inArg)
+		return cz * 8, rbr, dv, v, err
+	}
+
+	d.FieldRootBitBuf(name, rbr)
+
+	return cz * 8, rbr, nil, nil, nil
+}
+
+// TODO: refactor this
+func (d *D) FieldReaderRange(name string, startBit int64, nBits int64, fn func(r io.Reader) io.Reader) (int64, bitio.ReaderAtSeeker, error) {
+	sz, br, _, _, err := d.TryFieldReaderRangeFormat(name, startBit, nBits, fn, nil, nil)
+	return sz, br, err
 }
 
 func (d *D) FieldReaderRangeFormat(name string, startBit int64, nBits int64, fn func(r io.Reader) io.Reader, group *Group, inArg any) (int64, bitio.ReaderAtSeeker, *Value, any) {
 	cz, rBR, dv, v, err := d.TryFieldReaderRangeFormat(name, startBit, nBits, fn, group, inArg)
 	if err != nil {
-		d.IOPanic(err, "TryFieldReaderRangeFormat")
+		d.IOPanic(err, name, "TryFieldReaderRangeFormat")
 	}
 	return cz, rBR, dv, v
 }
@@ -1256,7 +1268,7 @@ func (d *D) TryFieldValue(name string, fn func() (*Value, error)) (*Value, error
 func (d *D) FieldValue(name string, fn func() *Value) *Value {
 	v, err := d.TryFieldValue(name, func() (*Value, error) { return fn(), nil })
 	if err != nil {
-		d.IOPanic(err, "FieldValue: TryFieldValue")
+		d.IOPanic(err, name, "FieldValue: TryFieldValue")
 	}
 	return v
 }
@@ -1264,7 +1276,7 @@ func (d *D) FieldValue(name string, fn func() *Value) *Value {
 func (d *D) RE(re *regexp.Regexp) []ranges.Range {
 	startPos := d.Pos()
 
-	rr := ioex.ByteRuneReader{RS: bitio.NewIOReadSeeker(d.bitBuf)}
+	rr := iox.ByteRuneReader{RS: bitio.NewIOReadSeeker(d.bitBuf)}
 	locs := re.FindReaderSubmatchIndex(rr)
 	if locs == nil {
 		return nil
@@ -1273,7 +1285,7 @@ func (d *D) RE(re *regexp.Regexp) []ranges.Range {
 
 	var rs []ranges.Range
 	l := len(locs) / 2
-	for i := 0; i < l; i++ {
+	for i := range l {
 		loc := locs[i*2 : i*2+2]
 		if loc[0] == -1 {
 			rs = append(rs, ranges.Range{Start: -1})

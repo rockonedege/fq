@@ -7,16 +7,16 @@ import (
 	"io"
 	"math/big"
 	"reflect"
-	"strings"
 	"time"
 
 	"github.com/mitchellh/copystructure"
-	"github.com/wader/fq/internal/bitioex"
-	"github.com/wader/fq/internal/gojqex"
-	"github.com/wader/fq/internal/ioex"
+	"github.com/wader/fq/internal/bitiox"
+	"github.com/wader/fq/internal/gojqx"
+	"github.com/wader/fq/internal/iox"
 	"github.com/wader/fq/internal/mapstruct"
 	"github.com/wader/fq/pkg/bitio"
 	"github.com/wader/fq/pkg/decode"
+	"github.com/wader/fq/pkg/scalar"
 
 	"github.com/wader/gojq"
 )
@@ -25,14 +25,6 @@ func init() {
 	RegisterFunc0("_registry", (*Interp)._registry)
 	RegisterFunc1("_tovalue", (*Interp)._toValue)
 	RegisterFunc2("_decode", (*Interp)._decode)
-}
-
-type expectedExtkeyError struct {
-	Key string
-}
-
-func (err expectedExtkeyError) Error() string {
-	return "expected a extkey but got: " + err.Key
 }
 
 // TODO: redo/rename
@@ -95,7 +87,7 @@ func (i *Interp) _registry(c any) any {
 		if f.DefaultInArg != nil {
 			doc := map[string]any{}
 			st := reflect.TypeOf(f.DefaultInArg)
-			for i := 0; i < st.NumField(); i++ {
+			for i := range st.NumField() {
 				f := st.Field(i)
 				if v, ok := f.Tag.Lookup("doc"); ok {
 					doc[mapstruct.CamelToSnake(f.Name)] = v
@@ -114,7 +106,7 @@ func (i *Interp) _registry(c any) any {
 					delete(args, k)
 				}
 			}
-			vf["decode_in_arg"] = gojqex.Normalize(args)
+			vf["decode_in_arg"] = gojqx.Normalize(args)
 		}
 
 		if f.Functions != nil {
@@ -200,7 +192,7 @@ func (i *Interp) _decode(c any, format string, opts decodeOpts) any {
 					c,
 					opts.Progress,
 					nil,
-					EvalOpts{output: ioex.DiscardCtxWriter{Ctx: i.EvalInstance.Ctx}},
+					EvalOpts{output: iox.DiscardCtxWriter{Ctx: i.EvalInstance.Ctx}},
 				)
 			}
 			lastProgress := time.Now()
@@ -294,27 +286,25 @@ func (i *Interp) _decode(c any, format string, opts decodeOpts) any {
 	return makeDecodeValueOut(dv, decodeValueValue, formatOutMap)
 }
 
-func valueKey(name string, a, b func(name string) any) any {
-	if strings.HasPrefix(name, "_") {
-		return a(name)
+func valueOrFallbackKey(name string, baseKey func(name string) any, valueHas func(key any) any, valueKey func(name string) any) any {
+	v := valueHas(name)
+	if b, ok := v.(bool); ok && b {
+		return valueKey(name)
 	}
-	return b(name)
+	return baseKey(name)
 }
-func valueHas(key any, a func(name string) any, b func(key any) any) any {
-	stringKey, ok := key.(string)
-	if ok && strings.HasPrefix(stringKey, "_") {
-		if err, ok := a(stringKey).(error); ok {
-			return err
-		}
-		return true
+func valueOrFallbackHas(key any, baseHas func(key any) any, valueHas func(key any) any) any {
+	v := valueHas(key)
+	if b, ok := v.(bool); ok && !b {
+		return baseHas(key)
 	}
-	return b(key)
+	return v
 }
 
 // TODO: make more efficient somehow? shallow values but might be hard
 // when things like tovalue.key should behave like a jq value and not a decode value etc
 func toValue(optsFn func() (*Options, error), v any) (any, error) {
-	return gojqex.ToGoJQValueFn(v, func(v any) (any, error) {
+	return gojqx.ToGoJQValueFn(v, func(v any) (any, error) {
 		switch v := v.(type) {
 		case JQValueEx:
 			if optsFn == nil {
@@ -349,7 +339,7 @@ func makeDecodeValueOut(dv *decode.Value, kind decodeValueKind, out any) any {
 		}
 		return NewStructDecodeValue(dv, out, vv)
 
-	case Scalarable:
+	case scalar.Scalarable:
 		// TODO: rethink value/actual/sym handling
 		var vvv any
 		switch kind {
@@ -367,7 +357,7 @@ func makeDecodeValueOut(dv *decode.Value, kind decodeValueKind, out any) any {
 			// create another binary we don't have to read and create a string, ex:
 			// .unknown0 | tobytes[1:] | ...
 			return decodeValue{
-				JQValue: &gojqex.Lazy{
+				JQValue: &gojqx.Lazy{
 					Type:     "string",
 					IsScalar: true,
 					Fn: func() (gojq.JQValue, error) {
@@ -376,10 +366,10 @@ func makeDecodeValueOut(dv *decode.Value, kind decodeValueKind, out any) any {
 						if err != nil {
 							return nil, err
 						}
-						if _, err := bitioex.CopyBits(buf, vvvC); err != nil {
+						if _, err := bitiox.CopyBits(buf, vvvC); err != nil {
 							return nil, err
 						}
-						return gojqex.String([]rune(buf.String())), nil
+						return gojqx.String([]rune(buf.String())), nil
 					},
 				},
 				decodeValueBase: decodeValueBase{dv: dv},
@@ -387,52 +377,52 @@ func makeDecodeValueOut(dv *decode.Value, kind decodeValueKind, out any) any {
 			}
 		case bool:
 			return decodeValue{
-				JQValue:         gojqex.Boolean(vvv),
+				JQValue:         gojqx.Boolean(vvv),
 				decodeValueBase: decodeValueBase{dv: dv},
 			}
 		case int:
 			return decodeValue{
-				JQValue:         gojqex.Number{V: vvv},
+				JQValue:         gojqx.Number{V: vvv},
 				decodeValueBase: decodeValueBase{dv: dv},
 			}
 		case int64:
 			return decodeValue{
-				JQValue:         gojqex.Number{V: big.NewInt(vvv)},
+				JQValue:         gojqx.Number{V: big.NewInt(vvv)},
 				decodeValueBase: decodeValueBase{dv: dv},
 			}
 		case uint64:
 			return decodeValue{
-				JQValue:         gojqex.Number{V: new(big.Int).SetUint64(vvv)},
+				JQValue:         gojqx.Number{V: new(big.Int).SetUint64(vvv)},
 				decodeValueBase: decodeValueBase{dv: dv},
 			}
 		case float64:
 			return decodeValue{
-				JQValue:         gojqex.Number{V: vvv},
+				JQValue:         gojqx.Number{V: vvv},
 				decodeValueBase: decodeValueBase{dv: dv},
 			}
 		case string:
 			return decodeValue{
-				JQValue:         gojqex.String(vvv),
+				JQValue:         gojqx.String(vvv),
 				decodeValueBase: decodeValueBase{dv: dv},
 			}
 		case []any:
 			return decodeValue{
-				JQValue:         gojqex.Array(vvv),
+				JQValue:         gojqx.Array(vvv),
 				decodeValueBase: decodeValueBase{dv: dv},
 			}
 		case map[string]any:
 			return decodeValue{
-				JQValue:         gojqex.Object(vvv),
+				JQValue:         gojqx.Object(vvv),
 				decodeValueBase: decodeValueBase{dv: dv},
 			}
 		case nil:
 			return decodeValue{
-				JQValue:         gojqex.Null{},
+				JQValue:         gojqx.Null{},
 				decodeValueBase: decodeValueBase{dv: dv},
 			}
 		case *big.Int:
 			return decodeValue{
-				JQValue:         gojqex.Number{V: vvv},
+				JQValue:         gojqx.Number{V: vvv},
 				decodeValueBase: decodeValueBase{dv: dv},
 			}
 		case Binary:
@@ -457,20 +447,27 @@ func (dvb decodeValueBase) DecodeValue() *decode.Value {
 
 func (dvb decodeValueBase) Display(w io.Writer, opts *Options) error { return dump(dvb.dv, w, opts) }
 func (dvb decodeValueBase) ToBinary() (Binary, error) {
+	if s, ok := dvb.dv.V.(scalar.Scalarable); ok && s.ScalarFlags().IsSynthetic() {
+		return Binary{}, fmt.Errorf("synthetic value can't be a binary")
+	}
 	return Binary{br: dvb.dv.RootReader, r: dvb.dv.InnerRange(), unit: 8}, nil
 }
 func (decodeValueBase) ExtType() string { return "decode_value" }
 func (dvb decodeValueBase) ExtKeys() []string {
-	kv := []string{
+	return []string{
 		"_actual",
 		"_bits",
 		"_buffer_root",
 		"_bytes",
 		"_description",
+		"_error",
 		"_format_root",
+		"_format",
 		"_gap",
+		"_index",
 		"_len",
 		"_name",
+		"_out",
 		"_parent",
 		"_path",
 		"_root",
@@ -478,20 +475,38 @@ func (dvb decodeValueBase) ExtKeys() []string {
 		"_stop",
 		"_sym",
 	}
+}
 
-	if _, ok := dvb.dv.V.(*decode.Compound); ok {
-		kv = append(kv,
-			"_error",
-			"_format",
-			"_out",
-		)
-
-		if dvb.dv.Index != -1 {
-			kv = append(kv, "_index")
-		}
+func (dvb decodeValueBase) JQValueHas(key any) any {
+	name, ok := key.(string)
+	if !ok {
+		return false
 	}
 
-	return kv
+	switch name {
+	case "_actual",
+		"_bits",
+		"_buffer_root",
+		"_bytes",
+		"_description",
+		"_error",
+		"_format_root",
+		"_format",
+		"_gap",
+		"_index",
+		"_len",
+		"_name",
+		"_out",
+		"_parent",
+		"_path",
+		"_root",
+		"_start",
+		"_stop",
+		"_sym":
+		return true
+	}
+
+	return false
 }
 
 func (dvb decodeValueBase) JQValueKey(name string) any {
@@ -500,12 +515,15 @@ func (dvb decodeValueBase) JQValueKey(name string) any {
 	switch name {
 	case "_actual":
 		switch dv.V.(type) {
-		case Scalarable:
+		case scalar.Scalarable:
 			return makeDecodeValue(dv, decodeValueActual)
 		default:
 			return nil
 		}
 	case "_bits":
+		if s, ok := dv.V.(scalar.Scalarable); ok && s.ScalarFlags().IsSynthetic() {
+			return nil
+		}
 		return Binary{
 			br:   dv.RootReader,
 			r:    dv.Range,
@@ -515,6 +533,9 @@ func (dvb decodeValueBase) JQValueKey(name string) any {
 		// TODO: rename?
 		return makeDecodeValue(dv.BufferRoot(), decodeValueValue)
 	case "_bytes":
+		if s, ok := dv.V.(scalar.Scalarable); ok && s.ScalarFlags().IsSynthetic() {
+			return nil
+		}
 		return Binary{
 			br:   dv.RootReader,
 			r:    dv.Range,
@@ -527,7 +548,7 @@ func (dvb decodeValueBase) JQValueKey(name string) any {
 				return nil
 			}
 			return vv.Description
-		case Scalarable:
+		case scalar.Scalarable:
 			desc := vv.ScalarDescription()
 			if desc == "" {
 				return nil
@@ -541,8 +562,8 @@ func (dvb decodeValueBase) JQValueKey(name string) any {
 		return makeDecodeValue(dv.FormatRoot(), decodeValueValue)
 	case "_gap":
 		switch vv := dv.V.(type) {
-		case Scalarable:
-			return vv.ScalarIsGap()
+		case scalar.Scalarable:
+			return vv.ScalarFlags().IsGap()
 		default:
 			return false
 		}
@@ -565,7 +586,7 @@ func (dvb decodeValueBase) JQValueKey(name string) any {
 		return big.NewInt(dv.Range.Stop())
 	case "_sym":
 		switch dv.V.(type) {
-		case Scalarable:
+		case scalar.Scalarable:
 			return makeDecodeValue(dv, decodeValueSym)
 		default:
 			return nil
@@ -591,7 +612,7 @@ func (dvb decodeValueBase) JQValueKey(name string) any {
 		}
 	}
 
-	return expectedExtkeyError{Key: name}
+	return nil
 }
 
 var _ DecodeValue = decodeValue{}
@@ -603,22 +624,25 @@ type decodeValue struct {
 }
 
 func (v decodeValue) JQValueKey(name string) any {
-	return valueKey(name, v.decodeValueBase.JQValueKey, v.JQValue.JQValueKey)
+	return valueOrFallbackKey(name, v.decodeValueBase.JQValueKey, v.JQValue.JQValueHas, v.JQValue.JQValueKey)
 }
 func (v decodeValue) JQValueHas(key any) any {
-	return valueHas(key, v.decodeValueBase.JQValueKey, v.JQValue.JQValueHas)
+	return valueOrFallbackHas(key, v.decodeValueBase.JQValueHas, v.JQValue.JQValueHas)
 }
 func (v decodeValue) JQValueToGoJQEx(optsFn func() (*Options, error)) any {
 	if !v.isRaw {
 		return v.JQValueToGoJQ()
 	}
 
-	bv, err := v.decodeValueBase.ToBinary()
-	if err != nil {
-		return err
+	if s, ok := v.dv.V.(scalar.Scalarable); ok && !s.ScalarFlags().IsSynthetic() {
+		bv, err := v.ToBinary()
+		if err != nil {
+			return err
+		}
+		return bv.JQValueToGoJQEx(optsFn)
 	}
 
-	return bv.JQValueToGoJQEx(optsFn)
+	return v.JQValueToGoJQ()
 
 }
 
@@ -627,7 +651,7 @@ func (v decodeValue) JQValueToGoJQEx(optsFn func() (*Options, error)) any {
 var _ DecodeValue = ArrayDecodeValue{}
 
 type ArrayDecodeValue struct {
-	gojqex.Base
+	gojqx.Base
 	decodeValueBase
 	*decode.Compound
 }
@@ -635,13 +659,13 @@ type ArrayDecodeValue struct {
 func NewArrayDecodeValue(dv *decode.Value, out any, c *decode.Compound) ArrayDecodeValue {
 	return ArrayDecodeValue{
 		decodeValueBase: decodeValueBase{dv: dv, out: out},
-		Base:            gojqex.Base{Typ: gojq.JQTypeArray},
+		Base:            gojqx.Base{Typ: gojq.JQTypeArray},
 		Compound:        c,
 	}
 }
 
 func (v ArrayDecodeValue) JQValueKey(name string) any {
-	return valueKey(name, v.decodeValueBase.JQValueKey, v.Base.JQValueKey)
+	return valueOrFallbackKey(name, v.decodeValueBase.JQValueKey, v.Base.JQValueHas, v.Base.JQValueKey)
 }
 func (v ArrayDecodeValue) JQValueSliceLen() any { return len(v.Compound.Children) }
 func (v ArrayDecodeValue) JQValueLength() any   { return len(v.Compound.Children) }
@@ -674,13 +698,13 @@ func (v ArrayDecodeValue) JQValueKeys() any {
 	return vs
 }
 func (v ArrayDecodeValue) JQValueHas(key any) any {
-	return valueHas(
+	return valueOrFallbackHas(
 		key,
-		v.decodeValueBase.JQValueKey,
+		v.decodeValueBase.JQValueHas,
 		func(key any) any {
 			intKey, ok := key.(int)
 			if !ok {
-				return gojqex.HasKeyTypeError{L: gojq.JQTypeArray, R: fmt.Sprintf("%v", key)}
+				return gojqx.HasKeyTypeError{L: gojq.JQTypeArray, R: fmt.Sprintf("%v", key)}
 			}
 			return intKey >= 0 && intKey < len(v.Compound.Children)
 		})
@@ -694,8 +718,8 @@ func (v ArrayDecodeValue) JQValueToGoJQEx(optsFn func() (*Options, error)) any {
 	vs := make([]any, 0, len(v.Compound.Children))
 	for _, f := range v.Compound.Children {
 		switch s := f.V.(type) {
-		case Scalarable:
-			if s.ScalarIsGap() && opts.SkipGaps {
+		case scalar.Scalarable:
+			if s.ScalarFlags().IsGap() && opts.SkipGaps {
 				// skip, note for arrays this will affect indexes
 				continue
 			}
@@ -714,7 +738,7 @@ func (v ArrayDecodeValue) JQValueToGoJQ() any {
 var _ DecodeValue = StructDecodeValue{}
 
 type StructDecodeValue struct {
-	gojqex.Base
+	gojqx.Base
 	decodeValueBase
 	*decode.Compound
 }
@@ -722,7 +746,7 @@ type StructDecodeValue struct {
 func NewStructDecodeValue(dv *decode.Value, out any, c *decode.Compound) StructDecodeValue {
 	return StructDecodeValue{
 		decodeValueBase: decodeValueBase{dv: dv, out: out},
-		Base:            gojqex.Base{Typ: gojq.JQTypeObject},
+		Base:            gojqx.Base{Typ: gojq.JQTypeObject},
 		Compound:        c,
 	}
 }
@@ -730,16 +754,31 @@ func NewStructDecodeValue(dv *decode.Value, out any, c *decode.Compound) StructD
 func (v StructDecodeValue) JQValueLength() any   { return len(v.Compound.Children) }
 func (v StructDecodeValue) JQValueSliceLen() any { return len(v.Compound.Children) }
 func (v StructDecodeValue) JQValueKey(name string) any {
-	if strings.HasPrefix(name, "_") {
-		return v.decodeValueBase.JQValueKey(name)
-	}
-	if v.Compound.ByName != nil {
-		if f, ok := v.Compound.ByName[name]; ok {
-			return makeDecodeValue(f, decodeValueValue)
-		}
-	}
+	return valueOrFallbackKey(
+		name,
+		v.decodeValueBase.JQValueKey,
+		func(key any) any {
+			stringKey, ok := key.(string)
+			if !ok {
+				return false
+			}
+			if v.Compound.ByName != nil {
+				if _, ok := v.Compound.ByName[stringKey]; ok {
+					return true
+				}
+			}
+			return false
+		},
+		func(name string) any {
+			if v.Compound.ByName != nil {
+				if f, ok := v.Compound.ByName[name]; ok {
+					return makeDecodeValue(f, decodeValueValue)
+				}
+			}
 
-	return nil
+			return nil
+		},
+	)
 }
 func (v StructDecodeValue) JQValueEach() any {
 	props := make([]gojq.PathValue, len(v.Compound.Children))
@@ -756,19 +795,21 @@ func (v StructDecodeValue) JQValueKeys() any {
 	return vs
 }
 func (v StructDecodeValue) JQValueHas(key any) any {
-	return valueHas(
+	return valueOrFallbackHas(
 		key,
-		v.decodeValueBase.JQValueKey,
+		v.decodeValueBase.JQValueHas,
 		func(key any) any {
 			stringKey, ok := key.(string)
 			if !ok {
-				return gojqex.HasKeyTypeError{L: gojq.JQTypeObject, R: fmt.Sprintf("%v", key)}
+				return gojqx.HasKeyTypeError{L: gojq.JQTypeObject, R: fmt.Sprintf("%v", key)}
 			}
-			for _, f := range v.Compound.Children {
-				if f.Name == stringKey {
+
+			if v.Compound.ByName != nil {
+				if _, ok := v.Compound.ByName[stringKey]; ok {
 					return true
 				}
 			}
+
 			return false
 		},
 	)
@@ -782,8 +823,8 @@ func (v StructDecodeValue) JQValueToGoJQEx(optsFn func() (*Options, error)) any 
 	vm := make(map[string]any, len(v.Compound.Children))
 	for _, f := range v.Compound.Children {
 		switch s := f.V.(type) {
-		case Scalarable:
-			if s.ScalarIsGap() && opts.SkipGaps {
+		case scalar.Scalarable:
+			if s.ScalarFlags().IsGap() && opts.SkipGaps {
 				continue
 			}
 		}

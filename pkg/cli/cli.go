@@ -14,8 +14,9 @@ import (
 	"runtime"
 
 	"github.com/wader/fq/pkg/interp"
+	"golang.org/x/term"
 
-	"github.com/wader/readline"
+	"github.com/ergochat/readline"
 )
 
 func maybeLogFile() {
@@ -80,19 +81,22 @@ func newStandardOS() *stdOS {
 
 func (stdOS) Platform() interp.Platform {
 	return interp.Platform{
-		OS:   runtime.GOOS,
-		Arch: runtime.GOARCH,
+		OS:        runtime.GOOS,
+		Arch:      runtime.GOARCH,
+		GoVersion: runtime.Version(),
 	}
 }
 
 type fdTerminal uintptr
 
 func (fd fdTerminal) Size() (int, int) {
-	w, h, _ := readline.GetSize(int(fd))
+	w, h, _ := term.GetSize(int(fd))
+	// TODO: old version return 0 on no terminal
+	w, h = max(0, w), max(0, h)
 	return w, h
 }
 func (fd fdTerminal) IsTerminal() bool {
-	return readline.IsTerminal(int(fd))
+	return term.IsTerminal(int(fd))
 }
 
 type stdinInput struct {
@@ -147,11 +151,27 @@ func (*stdOS) Args() []string { return os.Args }
 func (*stdOS) Environ() []string { return os.Environ() }
 
 func (*stdOS) ConfigDir() (string, error) {
-	p, err := os.UserConfigDir()
+	configDir, err := os.UserConfigDir()
 	if err != nil {
 		return "", err
 	}
-	return filepath.Join(p, "fq"), nil
+	fqDir := filepath.Join(configDir, "fq")
+
+	if runtime.GOOS != "darwin" {
+		return fqDir, nil
+	}
+
+	// this is to support fallback to ~/.config on macOS/darwin
+	if _, err := os.Stat(fqDir); err == nil {
+		return fqDir, nil
+	}
+
+	homeDir, err := os.UserHomeDir()
+	if err != nil {
+		return "", err
+	}
+
+	return filepath.Join(homeDir, ".config", "fq"), nil
 }
 
 type stdOSFS struct{}
@@ -175,6 +195,7 @@ func (o *stdOS) Readline(opts interp.ReadlineOpts) (string, error) {
 		cfg := &readline.Config{
 			HistoryFile:       historyFile,
 			HistorySearchFold: true,
+			Undo:              true,
 		}
 		cfg.AutoComplete = autoCompleterFn(func(line []rune, pos int) (newLine [][]rune, length int) {
 			if o.completerFn == nil {
@@ -255,7 +276,7 @@ func Main(r *interp.Registry, version string) {
 		}
 
 		if err := i.Main(context.Background(), sos.Stdout(), version); err != nil {
-			if ex, ok := err.(interp.Exiter); ok { //nolint:errorlint
+			if ex, ok := err.(interp.Exiter); ok {
 				return ex.ExitCode()
 			}
 			return 1

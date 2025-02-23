@@ -123,13 +123,13 @@ def _cli_eval_on_expr_error:
 # other expr error, other errors then cancel should not happen, report and halt
 def _cli_eval_on_error:
   if .error | _is_context_canceled_error then (null | halt_error(_exit_code_expr_error))
-  else halt_error(_exit_code_expr_error)
+  else _fatal_error(_exit_code_expr_error)
   end;
 # could not compile expr, report and halt
 def _cli_eval_on_compile_error:
   ( .error
   | _eval_compile_error_tostring
-  | halt_error(_exit_code_compile_error)
+  | _fatal_error(_exit_code_compile_error)
   );
 def _cli_repl_error($_):
   _eval_error("compile"; "repl can only be used from interactive repl");
@@ -143,13 +143,12 @@ def _cli_eval($expr; $opts):
   eval(
     $expr;
     ( $opts
-    + {
-        slurps: {
-          help: "_help_slurp",
-          repl: "_cli_repl_error",
-          slurp: "_cli_slurp_error"
-        },
-        catch_query: _query_func("_cli_eval_on_expr_error"),
+    + { slurps:
+          { help: "_help_slurp"
+          , repl: "_cli_repl_error"
+          , slurp: "_cli_slurp_error"
+          }
+      , catch_query: _query_func("_cli_eval_on_expr_error"),
       }
     );
     _cli_eval_on_error;
@@ -165,15 +164,15 @@ def _main:
         try (open | decode)
         catch
           ( "--argdecode \($a[0]): \(.)"
-          | halt_error(_exit_code_args_error)
+          | _fatal_error(_exit_code_args_error)
           )
       )
     );
-  ( . as {$version, $os, $arch, $args, args: [$arg0]}
+  ( . as {$version, $os, $arch, $go_version, $args, args: [$arg0]}
   # make sure we don't unintentionally use . to make things clearer
   | null
   | ( try _args_parse($args[1:]; _opt_cli_opts)
-      catch halt_error(_exit_code_args_error)
+      catch _fatal_error(_exit_code_args_error)
     ) as {parsed: $parsed_args, $rest}
   # combine default fixed opt, parsed args and -o key=value opts
   | _options_stack([
@@ -204,7 +203,7 @@ def _main:
       | println
       )
     elif $opts.show_version then
-      "\($version) (\($os) \($arch))" | println
+      "\($version) (\($os) \($arch) \($go_version))" | println
     elif
       ( $opts.filenames == [null] and
         $opts.null_input == false and

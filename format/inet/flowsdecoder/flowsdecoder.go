@@ -7,6 +7,7 @@ import (
 	"encoding/binary"
 	"fmt"
 	"net"
+	"slices"
 
 	"github.com/gopacket/gopacket"
 	"github.com/gopacket/gopacket/ip4defrag"
@@ -28,8 +29,8 @@ type TCPDirection struct {
 }
 
 type TCPConnection struct {
-	Client     TCPDirection
-	Server     TCPDirection
+	Client     *TCPDirection
+	Server     *TCPDirection
 	tcpState   *reassembly.TCPSimpleFSM
 	optChecker *reassembly.TCPOptionCheck
 	net        gopacket.Flow
@@ -62,9 +63,9 @@ func (t *TCPConnection) ReassembledSG(sg reassembly.ScatterGather, ac reassembly
 	var d *TCPDirection
 	switch dir {
 	case reassembly.TCPDirClientToServer:
-		d = &t.Client
+		d = t.Client
 	case reassembly.TCPDirServerToClient:
-		d = &t.Server
+		d = t.Server
 	default:
 		panic("unreachable")
 	}
@@ -115,16 +116,16 @@ func (fd *Decoder) New(net, transport gopacket.Flow, tcp *layers.TCP, ac reassem
 	}
 
 	stream := &TCPConnection{
-		Client: TCPDirection{
+		Client: &TCPDirection{
 			Endpoint: TCPEndpoint{
-				IP:   append([]byte(nil), net.Src().Raw()...),
+				IP:   slices.Clone(net.Src().Raw()),
 				Port: clientPort,
 			},
 			Buffer: &bytes.Buffer{},
 		},
-		Server: TCPDirection{
+		Server: &TCPDirection{
 			Endpoint: TCPEndpoint{
-				IP:   append([]byte(nil), net.Dst().Raw()...),
+				IP:   slices.Clone(net.Dst().Raw()),
 				Port: serverPort,
 			},
 			Buffer: &bytes.Buffer{},

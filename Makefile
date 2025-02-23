@@ -36,14 +36,14 @@ cover: test
 	cat cover.out.html | grep '<option value="file' | sed -E 's/.*>(.*) \((.*)%\)<.*/\2 \1/' | sort -rn
 
 doc: always
-doc: $(wildcard doc/*.svg)
+doc: $(wildcard doc/*.svg.sh)
 doc: $(wildcard *.md doc/*.md)
 
 %.md: fq
 	@doc/mdsh.sh ./fq $@
 
-doc/%.svg: fq
-	(cd doc ; ../$@.sh ../fq) | go run github.com/wader/ansisvg@master > $@
+doc/%.svg.sh: fq
+	(cd doc ; ../$@ ../fq) | go run github.com/wader/ansisvg@master > $(@:.svg.sh=.svg)
 
 doc/formats.svg: fq
 	@# ignore graphviz version as it causes diff when nothing has changed
@@ -61,7 +61,7 @@ gogenerate: always
 lint: always
 # bump: make-golangci-lint /golangci-lint@v([\d.]+)/ git:https://github.com/golangci/golangci-lint.git|^1
 # bump: make-golangci-lint link "Release notes" https://github.com/golangci/golangci-lint/releases/tag/v$LATEST
-	go run github.com/golangci/golangci-lint/cmd/golangci-lint@v1.53.2 run
+	go run github.com/golangci/golangci-lint/cmd/golangci-lint@v1.64.5 run
 
 depgraph.svg: always
 	go run github.com/kisielk/godepgraph@latest github.com/wader/fq | dot -Tsvg -o godepgraph.svg
@@ -77,8 +77,7 @@ cpuprof: prof
 	go tool pprof -http :5555 fq.prof fq.cpu.prof
 
 update-gomod: always
-	GOPROXY=direct go get -d github.com/wader/readline@fq
-	GOPROXY=direct go get -d github.com/wader/gojq@fq
+	GOPROXY=direct go get github.com/wader/gojq@fq
 	go mod tidy
 
 # Usage: make fuzz # fuzz all foramts
@@ -98,7 +97,6 @@ fuzz: always
 # tag forked dependeces for history and to make then stay around
 release: always
 release: WADER_GOJQ_COMMIT=$(shell go list -m -f '{{.Version}}' github.com/wader/gojq | sed 's/.*-\(.*\)/\1/')
-release: WADER_READLINE_COMMIT=$(shell go list -m -f '{{.Version}}' github.com/wader/readline | sed 's/.*-\(.*\)/\1/')
 release:
 	@echo "# wader/fq":
 	@echo "# make sure head is at wader/master"
@@ -119,10 +117,6 @@ release:
 	@echo
 	@echo "# wader/gojq:"
 	@echo git tag fq-v${VERSION} ${WADER_GOJQ_COMMIT}
-	@echo git push wader fq-v${VERSION}:fq-v${VERSION}
-	@echo
-	@echo "# wader/readline:"
-	@echo git tag fq-v${VERSION} ${WADER_READLINE_COMMIT}
 	@echo git push wader fq-v${VERSION}:fq-v${VERSION}
 	@echo
 	@echo "# wader/fq":
